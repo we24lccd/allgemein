@@ -1,0 +1,7 @@
+aws s3 ls [s3_link]
+aws s3 cp [s3_link] [des]
+aws sync [s3_link] [des]
+
+aws ecr create-repository -- repository-name nginx --region us-east-1 
+-> Lệnh này sẽ tạo một kho lưu trữ tên "nginx" trong vùng "us-east-1" của AWS ECR. Kho lưu trữ này sẽ được sử dụng để lưu trữ các image container Docker.
+
