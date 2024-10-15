@@ -1,0 +1,69 @@
+git clone -b develop git@git.rikkei.org:d8/summit/tokubai/batch/ms-all.git
+
+checkout ra branch mới: git checkout -b ms-toku-tenpo-group
+commit code mới lên: git add .
+tạo merged request vào branch develop: git checkout <branch_name>
+git status
+git push origin <branch_name>
+
+nhờ dev merged hộ
+chạy terraform
+
+
+git add > commit > push
+commit 
+push
+pull
+rebase
+restore
+
+git branch 
+git pull origin develop -> update code mới về local
+
+git config --global user.name 'abc'
+git config --global user.mail 'abc@gmail.com'
+
+git init : khởi tạo repo dưới local
+
+git checkout -b develop : tạo nhánh mới có tên develop
+
+git add 'filename' -> add từng file
+git add. -> add tất cả 
+git commit -m 'msg'
+
+git remote add origin 
+git push origin 
+git branch -d tên_nhánh -> xóa 1 nhánh
+git checkout -b tên nhánh -> tạo 1 nhánh mới và chuyển sang nhánh đó
+git checkout tên_nhánh -> chuyển nhánh 
+git branch -> xem danh sách tên nhánh
+git pull origin develop
+
+git pull origin main --allow-unrelated-histories
+
+
+Code Repository:
+
+Sử dụng dịch vụ AWS CodeCommit để lưu trữ và quản lý mã nguồn của dự án.
+Hoặc kết nối với các dịch vụ Git khác như GitHub, Bitbucket.
+
+Build:
+
+Sử dụng AWS CodeBuild để tự động xây dựng dự án của bạn.
+CodeBuild cung cấp môi trường xây dựng được quản lý, cho phép bạn tự động hóa các tác vụ như biên dịch, đóng gói và kiểm tra chất lượng.
+
+Test:
+
+Sử dụng AWS CodePipeline để tạo một đường ống CI/CD.
+Thêm một giai đoạn kiểm thử vào đường ống.
+Sử dụng các dịch vụ như AWS Device Farm để kiểm thử trên thiết bị thực hoặc AWS Lambda để thực hiện kiểm thử đơn vị.
+
+Deploy:
+
+Sử dụng AWS CodeDeploy để triển khai ứng dụng của bạn lên các môi trường khác nhau (ví dụ: development, staging, production).
+CodeDeploy có thể tự động triển khai ứng dụng của bạn lên các máy chủ EC2, AWS Lambda, hoặc các dịch vụ khác.
+
+Monitor:
+
+Sử dụng Amazon CloudWatch để giám sát hiệu suất và trạng thái của ứng dụng của bạn.
+CloudWatch cung cấp các biểu đồ, báo cáo và cảnh báo để giúp bạn theo dõi các chỉ số quan trọng.
