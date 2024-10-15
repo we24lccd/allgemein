@@ -1,0 +1,100 @@
+Các câu lệnh cơ bản trong cơ sở dữ liệu (Database)
+1. Lựa chọn cơ sở dữ liệu:
+
+USE database_name;
+
+2. Tạo bảng:
+
+CREATE TABLE table_name ( column_name1 data_type1, column_name2 data_type2, ... );
+
+3. Chèn dữ liệu:
+
+INSERT INTO table_name (column_name1, column_name2, ...) VALUES (value1, value2, ...);
+
+4. Lấy dữ liệu:
+
+SELECT column_name1, column_name2, ... FROM table_name;
+SELECT * FROM table_name; (lấy tất cả các cột)
+
+5. Cập nhật dữ liệu:
+
+UPDATE table_name SET column_name1 = new_value1, column_name2 = new_value2, ... WHERE condition;
+
+6. Xóa dữ liệu:
+
+DELETE FROM table_name WHERE condition;
+
+7. Xóa bảng:
+
+DROP TABLE table_name;
+
+Ngoài ra, còn có nhiều câu lệnh nâng cao khác:
+
+JOIN: Kết hợp dữ liệu từ nhiều bảng.
+GROUP BY: Nhóm dữ liệu theo một hoặc nhiều cột.
+HAVING: Lọc dữ liệu sau khi nhóm.
+ORDER BY: Sắp xếp dữ liệu theo một hoặc nhiều cột.
+DISTINCT: Loại bỏ các bản ghi trùng lặp.
+LIMIT: Giới hạn số lượng bản ghi được trả về.
+OFFSET: Bỏ qua một số lượng bản ghi nhất định trước khi trả về.
+Lưu ý:
+
+Cấu trúc câu lệnh và các từ khóa cụ thể có thể thay đổi tùy thuộc vào hệ quản trị cơ sở dữ liệu (DBMS) bạn sử dụng (ví dụ: MySQL, PostgreSQL, SQL Server).
+Tham khảo tài liệu hướng dẫn của DBMS cụ thể để biết thêm chi tiết về các câu lệnh và chức năng.
+Dưới đây là một số ví dụ về cách sử dụng các câu lệnh cơ bản:
+
+Ví dụ 1: Tạo bảng "students" với các cột "id", "name" và "age":
+
+CREATE TABLE students (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    age INT
+);
+
+Ví dụ 2: Chèn dữ liệu vào bảng "students":
+
+INSERT INTO students (name, age) VALUES ("John Doe", 20);
+INSERT INTO students (name, age) VALUES ("Jane Doe", 18);
+
+Ví dụ 3: Lấy dữ liệu từ bảng "students":
+
+SELECT * FROM students;
+
+Ví dụ 4: Cập nhật tuổi của học sinh có tên "John Doe":
+
+UPDATE students SET age = 21 WHERE name = "John Doe";
+
+Ví dụ 5: Xóa học sinh có tên "Jane Doe":
+
+DELETE FROM students WHERE name = "Jane Doe";
+
+SELECT studentID, FirstName, LastName, FirstName + ' ' + LastName AS FullName
+FROM student;
+
+CREATE TABLE table_name (
+	column_1 datatype,
+	column_2 datatype,
+	column_3 datatype
+);
+
+ALTER TABLE table_name
+ADD column_name datatype;
+
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    CHECK (Age>=18)
+);
+
+SELECT studentID, FullName, sat_score, rcd_updated FROM student
+
+UPDATE table_name
+SET column1 = value1, 
+    column2 = value2, ...
+WHERE condition;
+
+UPDATE Person
+SET Name = “Elton John”
+WHERE Id = 4;
