@@ -1,0 +1,186 @@
+docker run
+docker ps 
+docker build . -t docker-almalinux
+docker images
+docker exec -it ... /bin/bash
+docker search ...
+
+docker stop <Container_ID>
+docker rm <Container_ID>
+docker rm -f < Container_ID>
+docker rmi -f <Image_name>
+docker restart [OPTIONS] CONTAINER [CONTAINER...]
+
+docker image rm [OPTIONS] IMAGE [IMAGE...]
+
+docker logs <Container_ID>
+docker cp foo.txt container_id:/foo.txt
+
+Câu lệnh thường dùng khi thao tác với Docker Image
+docker images: Liệt kê các image
+docker image build: Build image từ file Dockerfile.
+docker image history: Hiện thị lịch sử của image.
+docker image import: Import nội dung từ tarball để tạo ra filesystem của image.
+docker image inspect: Hiển thị thông tin chi tiết của một hoặc nhiều image.
+docker load: Nạp image từ file *.tar hoặc STDIN.
+docker image prune: Xóa các image không sử dụng.
+docker pull …:… : Pull một image hoặc repository từ Docker HUB đăng ký.
+docker image push: Đẩy image, repository lên Docker HUB.
+docker image save: Lưu một hoặc nhiều image vào file *.tar.
+docker image tag: Gắn tag cho TARGET_IMAGE tương ứng với SOURCE_IMAGE.
+docker image rm …:...
+
+Câu lệnh thường dùng khi thao tác với Docker Container.
+docker commit: Tạo image mới từ những thay đổi của container.
+docker container create: Tạo container mới.
+docker container exec: Chạy các command khi container đang hoạt động.
+docker container kill: Chấm dứt hoạt động của một hoặc nhiều container.
+docker container pause: Tạm dừng tất cả tiến trình bên trong một hoặc nhiều container.
+docker run -it : Chạy các command trong một container mới.
+docker start: Chạy một container hoặc nhiều container đã dừng.
+docker container rename: Đổi tên container.
+docker container restart: Khởi động lại một hoặc nhiề u container
+docker attach ...
+
+docker network ls
+docker network inspect ...
+docker network create  --driver bridge network1
+docker network rm …
+docker network connect … ...
+
+   
+FROM ubuntu 
+RUN apt-get update; \     
+    apt-get install curl -y 
+
+# xây dựng image mới từ image centos:latest (CENTOS 7)
+FROM centos:latest
+
+# Thêm hai lệnh sau nếu CENTOS 8 không cập nhật được
+# RUN dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
+# RUN dnf -y distro-sync
+
+
+
+# Cập nhật các gói và cài vào đó HTTPD, HTOP, VIM
+RUN yum update -y
+RUN yum install httpd httpd-tools -y
+RUN yum install epel-release -y \
+    && yum update -y \
+    && yum install htop -y \
+    && yum install vim -y
+
+#Thiết lập thư mục hiện tại
+WORKDIR /var/www/html
+# Copy tất cả các file trong thư mục hiện tại (.)  vào WORKDIR
+ADD . /var/www/html
+
+#Thiết lập khi tạo container từ image sẽ mở cổng 80
+# ở mạng mà container nối vào
+EXPOSE 80
+
+# Khi chạy container tự động chạy ngay httpd
+ENTRYPOINT ["/usr/sbin/httpd"]
+
+#chạy terminate
+CMD ["-D", "FOREGROUND"]
+https://docs.docker.com/engine/reference/commandline/image/
+https://docker-ghichep.readthedocs.io/en/latest/lenh-docker/
+https://kb.pavietnam.vn/cac-lenh-docker-co-ban.html
+https://viblo.asia/p/nhung-cau-lenh-va-cac-tuy-chon-huu-ich-trong-docker-m68Z0MdMlkG
+https://viblo.asia/p/dockerfile-references-3P0lPkmpZox
+https://docs.docker.com/registry/introduction/
+https://xuanthulab.net/su-dung-dockerfile-de-tu-dong-tao-cac-image-trong-docker.html
+
+docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
+
+
+
+docker search ubuntu 
+docker pull ubuntu:18.04 
+docker image ls 
+docker run -p 80:80 -d nginx:latest 
+docker ps 
+docker exec -it web bash 
+docker commit -m "changed index.html file" -a "identicalCloud" web identicalcloud-web 
+docker inspect web 
+docker logs web 
+docker cp web:/usr/share/nginx/html/index.html . 
+docker stop web docker rm web 
+docker build -t identicalcloud-nodejs:1 . 
+docker tag identicalcloud-nodejs:1 identicalcloud/nodejs:4 
+docker login
+ docker push identicalcloud/nodejs:4 
+docker logout 
+docker rmi ubuntu:18.04 
+docker volume prune 
+docker system prune -a 
+docker version 
+docker info 
+
+1. Quản lý Image:
+
+docker pull image-name: Tải image từ Docker Hub hoặc registry khác.
+docker images: Liệt kê tất cả các image hiện có trên máy.
+docker rmi image-id: Xóa image theo ID.
+docker build -t image-name .: Tạo image từ Dockerfile trong thư mục hiện tại.
+
+2. Quản lý Container:
+
+docker run image-name: Khởi chạy container từ image.
+docker ps: Liệt kê tất cả các container đang chạy.
+docker stop container-id: Dừng container đang chạy.
+docker rm container-id: Xóa container (bao gồm cả dữ liệu).
+docker logs container-id: Xem log của container.
+docker exec -it container-id /bin/bash: Mở shell tương tác trong container.
+
+3. Quản lý Volume:
+
+docker volume create volume-name: Tạo volume mới.
+docker volume ls: Liệt kê tất cả các volume.
+docker volume inspect volume-name: Xem chi tiết về volume.
+docker volume rm volume-name: Xóa volume.
+
+4. Quản lý Network:
+
+docker network create network-name: Tạo network mới.
+docker network ls: Liệt kê tất cả các network.
+docker network inspect network-name: Xem chi tiết về network.
+docker network rm network-name: Xóa network.
+
+5. Quản lý Stack:
+
+docker stack deploy -c stack-file.yml stack-name: Deploy stack từ stack file.
+docker stack ls: Liệt kê tất cả các stack.
+docker stack ps stack-name: Liệt kê các service trong stack.
+docker stack rm stack-name: Xóa stack.
+
+6. docker run
+-d, --detach: Chạy container ở chế độ nền (detached mode), không hiển thị output của container ra terminal.
+-i, --interactive: Để cho phép tương tác với container qua terminal.
+-t, --tty: Cấp cho container một pseudo-TTY, thường kết hợp với -i để có thể tương tác với container.
+-p, --publish: Mở cổng của container ra ngoài host. Ví dụ: -p 80:80 để map port 80 của container ra port 80 của host.
+-v, --volume: Mount một volume vào container. Ví dụ: -v /data:/app/data để mount thư mục /data của host vào thư mục /app/data của container.
+-e, --env: Thiết lập biến môi trường cho container. Ví dụ: -e MY_ENV=value.
+--name: Đặt tên cho container.
+--rm: Tự động xóa container khi nó dừng.
+-w, --workdir: Thiết lập thư mục làm việc mặc định cho các process trong container.
+Một số tùy chọn khác:
+
+--restart: Cấu hình chính sách khởi động lại container khi nó bị dừng.
+--user: Chạy container với user cụ thể.
+--cap-add, --cap-drop: Cấu hình các khả năng của container.
+--net: Cấu hình mạng cho container.
+--link: Liên kết các container với nhau.
+--add-host: Thêm các entry vào file hosts của container.
+--device: Cấp quyền truy cập vào các thiết bị vật lý của host cho container.
+
+7. docker exec
+
+-i, --interactive: Để vào container trong chế độ tương tác, cho phép bạn nhập lệnh.
+-t, --tty: Cấp cho container một pseudo-TTY, thường kết hợp với -i để có một giao diện giống như terminal.
+-u, --user: Chạy lệnh với tư cách người dùng khác bên trong container.
+-w, --workdir: Thiết lập thư mục làm việc mặc định cho lệnh.
+-e, --env: Thiết lập biến môi trường cho lệnh.
+-d, --detach: Chạy lệnh ở chế độ nền (detached mode).
+--privileged: Chạy container với quyền root đầy đủ. Cẩn trọng khi sử dụng tùy chọn này.
