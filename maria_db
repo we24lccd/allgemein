@@ -1,0 +1,17 @@
+mysql -u root
+show databases;
+create database abc; 
+create user 'abc'@'%' identified by 'pw';
+grant all privileges on abc.* to 'abc'@'%';
+flush privileges
+exit
+mysql -h ip -P port -u user -p
+use db;
+show tables;
+source /path_sql -> import sql
+
+Update the password for the MySql Server
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'place-your-password-here';
+
+FLUSH PRIVILEGES;
+
