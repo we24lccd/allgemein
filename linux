@@ -1,0 +1,379 @@
+Điều kiện với các tệp, thư mục:
+-e kiểm tra xem tệp được chỉ định bởi biến môi trường có tồn tại hay không
+-f <tên> : sự tồn tại của tệp thông thường.
+-d <tên> : sự tồn tại của thư mục.
+-c <tên>: sự tồn tại tệp dạng ký tự
+-r <tên>: sự tồn tại và có thể đọc được.
+-s <tên>: sự tồn tại và có thể ghi được.
+-w <tên>: sự tồn tại và có thể ghi được
+-x <tên>: sự tồn tại và có thể chạy được.
+
+Điều kiện với các xâu ký tự
+-n s1: xâu s1 có độ dài lớn hơn 0
+-z ns1: xâu s1 có độ dài bằng 0
+s1 = s2: hai xâu s1 và s2 giống nhau
+s1 !=s2: hai xâu s1 và s2 không giống nhau
+s1 < s2: xâu s1 đứng trước xâu s2 theo thứ tự của bảng mã ASCII
+s1 > s2 xâu s1 đứng sau xâu s2 theo thứ tự của bảng mã ASCILL
+string biến string không rỗng (not null)
+
+Điều kiện với các số
+-a: Đây là toán tử logic AND, kết hợp hai điều kiện kiểm tra.
+-s: Điều này kiểm tra xem tệp REPTEXEC_WK_${START_TIME} có trống hay không.
+n1 -eq n2: so sánh bằng.
+n1 -ge ns2: so sánh lớn hơn hoặc bằng,
+n1 -gt n2: so sánh lớn hơn
+n1 -le n2: so sánh nhỏ hơn hoặc bằng.
+n1 -lt n2: so sánh nhỏ hơn
+n1 -ne n2: so sánh không bằng.
+
+$0 : tên tệp đang được thực hiện
+$1 : tham số thứ nhất
+$2: Tham số thứ hai
+!	Phủ định logic	[ ! false ] Kết quả: true
+-o	Phép OR - Nếu một trong các toán hạng là đúng thì biểu thức đúng	[ $a -lt 20 -o $b -gt 100 ] Kết quả: true
+-a	Phép AND - Nếu tất cả các toán hạng đúng thì biểu thức đúng	[ $a -lt 20 -a $b -gt 100 ] Kết quả:false
+$0 - Tên tệp của lệnh/tập lệnh hiện tại
+$n - Các biến này tương ứng với các đối số truyền vào, n là số nguyên dương. Ví dụ: ./test.sh a b thì đối số $1, $2 lần lượt là a và b
+$# - Số lượng đối số truyền vào. Vd: ./test.sh a b sẽ có 2 đối số
+$? - Trạng thái thoát ra của lệnh trước được chạy (thường là 0 đại diện cho lệnh trước chạy thành công, khác 0 là failed) Max range [0 – 255]
+$$ - Số tiến trình của shell hiện tại. Đối với Shell Script thì đây là số processID mà nó đang chạy
+$! - Process number của lệnh background cuối cùng
+$* - Chứa tất cả các đối số truyền vào. Nếu có 3 đối số truyền vào thì giá trị sẽ là $1 $2 $3 khi sử dụng
+$@ - Chứa tất cả các đối số truyền vào nhưng phân tách thành các đối số riêng lẻ không như $*
+$- cờ (flag)
++ phép cộng
+– phép trừ
+* phép nhận
+/ phép chia
+% phép lấy phần dư
+== so sánh bằng
+!= so sánh không bằng
+< so sánh nhỏ hơn
+> so sánh lớn hơn
+>= so sánh lớn hơn hoặc bằng
+<= so sánh nhỏ hơn hoặc bằng
+|| hoặc
+&& và
+$USER tên người sử dụng hiện tại
+echo in ra màn hình
+read đọc từ bàn phím
+$HOME/$home thư mục chính của người dùng hiện tại
+$dir
+$path
+echo -e :tùy chọn -e cho phép chèn các ký tự, như \n cho dòng mới hoặc \t cho các tab.
+
+Bạn hãy thử tự comment dòng local foo lại và check xem điều gì sẽ xảy ra nhé.
+
+Nếu như trong script bạn sử dụng tới một biến mà ở các lệnh trước chưa khai báo biến đó, hoặc biến đó chưa có giá trị, bạn có thể sử dụng một vài cú pháp sau được gọi là variable expansion:
+
+#{foo:-"Default value"} : nếu foo không tồn tại hoặc không chứa giá trị, nó sẽ sử dụng giá trị khai báo sau :-.
+➜  /tmp foo= 
+➜  /tmp echo ${foo:-"Default"}
+Default
+➜  /tmp echo ${foo} 
+
+#{foo:="Default value"} : giống như cách trên nhưng sau đó, biến foo sẽ được gán cho giá trị sau :=
+➜  /tmp echo ${foo:="Default"}
+Default
+➜  /tmp echo ${foo}
+Default
+
+Một số tùy chọn của lệnh read yêu cầu một tham số bổ sung để sử dụng. Các tùy chọn được sử dụng phổ biến nhất của lệnh đọc được đề cập như sau:
+
+Tùy chọn Mục đích
+-d <dấu phân cách> Nó được sử dụng để lấy đầu vào cho đến khi giá trị dấu phân cách được cung cấp.
+-n <số> Nó được sử dụng để lấy đầu vào của một số ký tự cụ thể từ thiết bị đầu cuối và dừng lấy đầu vào trước đó dựa trên dấu phân cách.
+-N <số> Nó được sử dụng để lấy đầu vào của một số ký tự cụ thể từ thiết bị đầu cuối, bỏ qua dấu phân cách.
+-p <prompt> Nó được sử dụng để in đầu ra của thông báo nhắc trước khi lấy đầu vào.
+-s Nó được sử dụng để lấy đầu vào mà không có tiếng vang. Tùy chọn này chủ yếu được sử dụng để lấy đầu vào cho đầu vào mật khẩu.
+-a Nó được sử dụng để lấy đầu vào cho mảng được lập chỉ mục.
+-t <time> Nó được sử dụng để đặt giới hạn thời gian cho việc nhập liệu.
+-u <mô tả tệp> Nó được sử dụng để lấy đầu vào từ tệp.
+-r Nó được sử dụng để vô hiệu hóa các dấu gạch chéo ngược.
+
+-a <array>	Assigns the provided word sequence to a variable named <array>.
+-d <delimiter>	Reads a line until the provided <delimiter> instead of a new line.
+-e	Starts an interactive shell session to obtain the line to read.
+-i <prefix>	Adds initial text before reading a line as a prefix.
+-n <number>	Returns after reading the specified number of characters while honoring the delimiter to terminate early.
+-N <number>	Returns after reading the specified number of chars, ignoring the delimiter.
+-p <prompt>	Outputs the prompt string before reading user input.
+-r	Disable backslashes to escape characters.
+-s	Does not echo the user's input.
+-t <time>	The command times out after the specified time in seconds.
+-u <file descriptor>	Read from file descriptor instead of standard input.
+
+find / -type f -size +1G , find . -size +1G 
+du -h * | grep -v "^\s*$" | sort -n | head -n 10
+-> lọc file lớn hơn 1GB
+
+
+find -atime -1 -type fclear -> lọc file truy cập từ 1 ngày trước 
+find . -mtime +7 -> tìm tất cả các file đã không truy cập từ 1 tuần trước
+
+scp remote_username@127.0.0.1:/remote/pavietnam.tar.gz /local/directory -> copy file từ máy remote
+scp -i d-key-PRD-0001.PEM user@server:/sourcefile /desfile -> copy
+scp -i d-key-PRD-0001.PEM /sourcefile user@server:/desfile -> đẩy
+
+Kiểm tra định dạng của sda3:
+df -hT
+
+Sử dụng lệnh df -h để xác định kích thước hiện tại của sda3:
+df -h
+
+Sử dụng lệnh fdisk /dev/sda để mở rộng kích thước của sda:
+sudo fdisk /dev/sda
+Nhấn p để liệt kê các phân vùng hiện có.
+Nhấn d để xóa phân vùng sda3.
+Nhấn n để tạo phân vùng mới.
+Nhập p để tạo phân vùng chính.
+Nhập kích thước phân vùng mới. 
+Sử dụng lệnh resize2fs /dev/sda3 để tăng kích thước của sda3:
+sudo resize2fs /dev/sda3
+
+lấy trường thứ 2 từ dữ liệu truyền vào bằng lệnh 
+ls -l | awk -F ' ' '{print $5 " "}'
+
+echo ${hostname:4:1}
+
+
+stop chronyd: sudo systemctl stop chronyd
+change time: sudo date -s "YYYY-MM-DD HH:MM:SS"
+
+
+tạo một tệp có tên myfile với dung lượng 100MB:
+dd if=/dev/zero of=myfile bs=1M count=100
+
+
+https://phoenixnap.com/kb/bash-read #lệnh read
+https://viblo.asia/p/linux-shell-va-shell-script-variables-basic-operators-Ljy5V1rolra
+https://www.pluralsight.com/resources/blog/cloud/conditions-in-bash-scripting-if-statements
+https://viblo.asia/p/gioi-thieu-ve-linux-shell-va-shell-script-aWj53LweK6m
+https://nguyenvanhieu.vn/hoc-bash-shell-co-ban/
+https://www.tutorialspoint.com/unix/unix-shell-substitutions.htm
+https://cloud.z.com/vn/support/cloud/nen-va-giai-nen-file-tar-gzip-va-zip/
+https://wiki.minhduy.vn/cach-set-va-liet-ke-bien-moi-truong-environment-variables-trong-linux.html
+https://vpsgiare.info/tim-hieu-lap-trinh-bash-shell-script-linux/
+https://tldp.org/LDP/abs/html/
+https://viblo.asia/p/lam-viec-voi-file-csv-va-json-bang-giao-dien-dong-lenh-jvElaW6AKkw
+https://www.gnu.org/software/bash/manual/bash.html#Here-Strings
+https://blogd.net/linux/su-dung-lenh-awk/ #AWK
+https://123host.vn/community/tutorial/lenh-hien-thi-tat-ca-cac-jobs-hien-tai-va-trang-thai-jobs-tren-linux-NzDWi.html #AWK
+
+SSH Tunneling
+ssh -L 4000:10.103.1.19:3389 -i AP_windows_server.pem ubuntu@18.183.252.6
+
+check ram: while true ; do echo $(date) >> /tmp/ram_log ; free |& tee -a /tmp/ram_log; sleep 1; done;
+check cpu: watch -n 1 "mpstat -P ALL |$ tee -a /tmp/ddos_log"
+
+dos2unix
+
+# 1. Entry: Minute when the process will be started [0-60]
+# 2. Entry: Hour when the process will be started [0-23]
+# 3. Entry: Day of the month when the process will be started [1-28/29/30/31]
+# 4. Entry: Month of the year when the process will be started [1-12]
+# 5. Entry: Weekday when the process will be started [0-6] [0 is Sunday]
+
+tìm ký tự trên toàn bộ máy: 
+
+grep "abc" *.*
+
+Cách Kiểm Tra Các Thư Viện (Lib) Đã Cài Đặt Trong Linux
+dpkg -l
+dpkg -s <tên_gói>
+apt list --installed
+rpm -qa
+
+giải nén file:
+tar -zxvf <tên_tệp_tar.gz>
+
+nén file
+tar -czvf <tên_file_nén.tar.gz> <các_file_hoặc_thư_mục>
+
+Cách kiểm tra số lượng phiên SSH đang kết nối đến máy Linux
+Để kiểm tra số lượng phiên SSH đang kết nối đến máy Linux, bạn có thể sử dụng một số lệnh sau:
+
+1. Lệnh w:
+Công dụng: Hiển thị thông tin về các người dùng đang đăng nhập và tiến trình họ đang chạy.
+Cách sử dụng:
+
+w
+
+
+Kết quả: Lệnh này sẽ hiển thị một bảng thông tin, bao gồm tên người dùng, terminal, thời gian đăng nhập, thời gian không hoạt động và lệnh đang chạy. Bạn có thể đếm số dòng trong phần này để biết số lượng phiên SSH.
+2. Lệnh who:
+Công dụng: Hiển thị danh sách các người dùng đang đăng nhập vào hệ thống.
+Cách sử dụng:
+
+who
+
+
+Kết quả: Lệnh này sẽ liệt kê tên người dùng, terminal và thời gian đăng nhập.
+3. Lệnh ps aux | grep sshd:
+Công dụng: Liệt kê tất cả các tiến trình đang chạy và lọc ra các tiến trình liên quan đến SSH.
+Cách sử dụng:
+
+ps aux | grep sshd
+
+
+Kết quả: Lệnh này sẽ hiển thị danh sách các tiến trình có chứa từ khóa "sshd". Mỗi dòng đại diện cho một phiên SSH.
+4. Lệnh netstat -antp | grep :22:
+Công dụng: Hiển thị các kết nối mạng đang mở, bao gồm cả các kết nối SSH.
+Cách sử dụng:
+
+netstat -antp | grep :22
+
+
+Kết quả: Lệnh này sẽ liệt kê các kết nối đang nghe trên cổng 22 (cổng mặc định của SSH). Mỗi dòng đại diện cho một kết nối SSH.
+Lựa chọn lệnh phù hợp:
+w và who cung cấp thông tin tổng quan về các người dùng đang đăng nhập.
+ps aux | grep sshd cung cấp thông tin chi tiết hơn về các tiến trình SSH.
+netstat -antp | grep :22 tập trung vào các kết nối mạng trên cổng SSH.
+Lưu ý:
+
+Số lượng phiên: Để đếm chính xác số lượng phiên, bạn có thể kết hợp các lệnh trên với lệnh wc -l (đếm số dòng). Ví dụ: ps aux | grep sshd | wc -l.
+Các tùy chọn khác: Các lệnh trên có nhiều tùy chọn khác để lọc và định dạng kết quả. Tham khảo tài liệu của từng lệnh để biết thêm chi tiết.
+Ví dụ:
+Để kiểm tra số lượng phiên SSH đang kết nối và hiển thị thông tin chi tiết về các phiên đó, bạn có thể sử dụng lệnh:
+
+
+ps aux | grep sshd
+
+
+Kết quả có thể giống như sau:
+
+user1     2345  0.0  0.0 11244  1284 pts/0    S+   11:34   0:00 sshd: user1@pts/0
+user2     3456  0.1  0.2 15360  2560 pts/1    S+   12:00   0:01 sshd: user2@pts/1
+Giải thích:
+
+user1 và user2: Tên người dùng.
+2345 và 3456: PID của tiến trình.
+pts/0 và pts/1: Terminal mà người dùng kết nối.
+11:34 và 12:00: Thời gian bắt đầu phiên.
+Các lệnh khác có thể hữu ích:
+
+last: Hiển thị lịch sử đăng nhập của các người dùng.
+whois: Hiển thị thông tin về một tên miền hoặc địa chỉ IP.
+Chú ý: Việc kiểm tra và quản lý các phiên SSH là rất quan trọng để đảm bảo bảo mật cho hệ thống của bạn. Bạn nên thường xuyên kiểm tra và cấu hình các dịch vụ SSH để ngăn chặn các cuộc tấn công từ bên ngoài.
+
+tiến trình trong linux:
+https://www.geeksforgeeks.org/pstree-command-in-linux-with-examples/ 
+
+tìm ký tự abc trong path /home
+find /home -type f -exec grep -Hn "abc" {} \; 
+
+Tìm file trong máy:
+find / -name "*.ycc"
+find . -name "abc"
+
+Các phím tắt cơ bản trong lệnh vi của Linux
+Hiểu về các chế độ của vi
+Vi hoạt động dựa trên các chế độ khác nhau. Hai chế độ chính là:
+•	Chế độ lệnh (command mode): Đây là chế độ mặc định khi bạn mở vi. Trong chế độ này, các phím bạn gõ sẽ được hiểu là các lệnh để điều khiển vi, chứ không phải để nhập văn bản.
+•	Chế độ chèn (insert mode): Trong chế độ này, các phím bạn gõ sẽ được chèn trực tiếp vào văn bản.
+Các phím tắt cơ bản
+Chuyển đổi giữa các chế độ:
+•	Esc: Chuyển từ chế độ chèn về chế độ lệnh.
+Di chuyển con trỏ:
+•	h: Di chuyển sang trái một ký tự.
+•	j: Di chuyển xuống một dòng.
+•	k: Di chuyển lên một dòng.
+•	l: Di chuyển sang phải một ký tự.
+•	w: Di chuyển đến đầu từ tiếp theo.
+•	b: Di chuyển đến đầu từ trước đó.
+•	0: Di chuyển đến đầu dòng.
+•	$: Di chuyển đến cuối dòng.
+Chỉnh sửa văn bản:
+•	i: Chèn ký tự trước vị trí con trỏ (insert).
+•	a: Chèn ký tự sau vị trí con trỏ (append).
+•	o: Mở một dòng mới ở dưới dòng hiện tại.
+•	O: Mở một dòng mới ở trên dòng hiện tại.
+•	x: Xóa ký tự dưới con trỏ.
+•	dw: Xóa từ dưới con trỏ.
+•	dd: Xóa dòng hiện tại.
+•	yy: Sao chép dòng hiện tại.
+•	p: Dán dòng đã sao chép.
+Lưu và thoát:
+•	:wq: Lưu thay đổi và thoát.
+•	:q!: Thoát mà không lưu.
+Tìm kiếm:
+•	/pattern: Tìm kiếm từ đầu đến cuối tệp.
+•	?pattern: Tìm kiếm từ cuối lên đầu tệp.
+Ví dụ
+•	Để chèn một dòng mới ở trên dòng hiện tại, bạn nhấn O.
+•	Để xóa từ dưới con trỏ, bạn nhấn dw.
+•	Để lưu và thoát, bạn nhấn :wq.
+Một số phím tắt nâng cao
+•	u: Hoàn tác (undo).
+•	ctrl+r: Lại làm (redo).
+•	. (chấm): Lặp lại lệnh trước đó.
+•	v: Chế độ visual để chọn khối văn bản.
+Lưu ý: Đây chỉ là một số phím tắt cơ bản. Vi có rất nhiều phím tắt khác nhau, tùy thuộc vào nhu cầu sử dụng và tùy chỉnh của người dùng.
+Để tìm hiểu thêm:
+•	Sử dụng lệnh :help: Trong vi, bạn có thể gõ :help để xem hướng dẫn chi tiết về các lệnh và phím tắt.
+•	Tìm kiếm trên internet: Có rất nhiều tài liệu và hướng dẫn về vi trên mạng.
+Lời khuyên:
+•	Thực hành thường xuyên: Cách tốt nhất để thành thạo vi là thực hành thường xuyên.
+•	Bắt đầu với các lệnh đơn giản: Đừng cố gắng học tất cả các lệnh cùng một lúc. Hãy bắt đầu với các lệnh cơ bản và dần dần nâng cao.
+•	Tìm một tài liệu hướng dẫn phù hợp: Có nhiều tài liệu hướng dẫn vi với các cấp độ khác nhau. Hãy chọn một tài liệu phù hợp với trình độ của bạn.
+Vi là một công cụ rất mạnh mẽ và linh hoạt. Việc nắm vững các phím tắt sẽ giúp bạn làm việc hiệu quả hơn với vi.
+
+It's a useful vi operation to know. I'll explain it at the next Meet. ★ is especially useful
+↓ j
+↑ k
+:100 Jump to line 100 ★
+:0 First
+G Last line
+
+/Request complete Search ★
+n Search next
+? Search previous
+o Insert (previous line)
+O Insert (next line)
+A Insert at end of line
+I Insert at beginning of line
+yy ⇒ p Copy and paste line
+dd ⇒ p Delete and paste line
+cw Replace
+. Repeat execution
+u Edit Return
+:%s/aaaa/bbbb/g Replace all
+:%g/aaaa/d Delete all lines with aaaa
+
+1.	Chọn các dòng cần copy: 
+o	Dùng số để chọn: 
+	Để chọn 5 dòng bắt đầu từ dòng hiện tại, bạn gõ: 5yy (y là lệnh yank - tương đương với copy).
+	Để chọn từ dòng hiện tại đến cuối file, bạn gõ: :.,$y
+o	Dùng dấu . để lặp lại lệnh: 
+	Nếu bạn vừa copy 5 dòng, muốn copy thêm 5 dòng nữa, chỉ cần gõ ..
+2.	Dán các dòng đã copy: 
+o	Để dán các dòng đã copy vào dòng tiếp theo, bạn gõ: p
+o	Để dán các dòng đã copy trước dòng hiện tại, bạn gớ: P
+Ví dụ:
+•	Copy 3 dòng bắt đầu từ dòng hiện tại và dán vào cuối file:
+•	3yy
+•	G p
+o	3yy: Copy 3 dòng.
+o	G: Di chuyển con trỏ đến cuối file.
+o	p: Dán các dòng đã copy.
+•	Copy từ dòng hiện tại đến cuối file và dán vào đầu file:
+•	:.,$y
+•	gg p
+o	:.,$y: Copy từ dòng hiện tại đến cuối file.
+o	gg: Di chuyển con trỏ đến đầu file.
+o	p: Dán các dòng đã copy.
+Một số lệnh khác liên quan:
+•	Xóa nhiều dòng: 
+o	dd: Xóa dòng hiện tại.
+o	3dd: Xóa 3 dòng bắt đầu từ dòng hiện tại.
+•	Di chuyển nhiều dòng: 
+o	yy (copy) và p (paste) kết hợp để di chuyển các dòng.
+•	Tìm kiếm và thay thế: 
+o	/tìm_kiếm: Tìm kiếm từ khóa.
+o	:s/tìm/thay_thế/g: Thay thế tất cả các từ tìm thấy trong file.
+
+
+
+
+	
