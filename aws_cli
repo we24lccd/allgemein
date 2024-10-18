@@ -5,3 +5,28 @@ aws sync [s3_link] [des]
 aws ecr create-repository -- repository-name nginx --region us-east-1 
 -> Lệnh này sẽ tạo một kho lưu trữ tên "nginx" trong vùng "us-east-1" của AWS ECR. Kho lưu trữ này sẽ được sử dụng để lưu trữ các image container Docker.
 
+1. Creating a Repository:
+
+Bash
+aws ecr create-repository --repository-name my-repository
+
+2. Listing Repositories:
+
+Bash
+aws ecr describe-repositories
+
+3. Pushing an Image:
+
+Bash
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/my-repository:latest   
+
+4. Pulling an Image:
+
+Bash
+docker pull <account-id>.dkr.ecr.us-east-1.amazonaws.com/my-repository:latest
+
+5. Deleting a Repository:
+
+Bash
+aws ecr delete-repository --repository-name my-repository --force
