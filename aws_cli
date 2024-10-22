@@ -30,3 +30,22 @@ docker pull <account-id>.dkr.ecr.us-east-1.amazonaws.com/my-repository:latest
 
 Bash
 aws ecr delete-repository --repository-name my-repository --force
+
+Create a Security Group: We’ll need to define a security group to keep things safe.
+aws ec2 create-security-group --group-name StorageLabs --description "SG for EFS storage"
+
+Add an Inbound SSH Rule: This allows you to log into your instances for some hands-on fun.
+aws ec2 authorize-security-group-ingress --group-name StorageLabs --protocol tcp --port 22 --cidr 0.0.0.0/0
+
+Launch EC2 in US-EAST-1A: Time to start the first instance in AZ 1A.
+
+aws ec2 run-instances --image-id ami-0866a3c8686eaeeba --instance-type t2.micro --placement AvailabilityZone=us-east-1a --security-group-ids sg-00055e6ae2bc876ce
+
+Launch EC2 in US-EAST-1B: Now, fire up the second instance in AZ 1B for redundancy and magic.
+
+aws ec2 run-instances --image-id ami-0866a3c8686eaeeba --instance-type t2.micro --placement AvailabilityZone=us-east-1b --security-group-ids sg-00055e6ae2bc876ce
+
+Add NFS Protocol Rule: To make sure the EC2s and EFS play nicely, add an NFS rule to your security group.
+aws ec2 authorize-security-group-ingress --group-id sg-00055e6ae2bc876ce --protocol tcp --port 2049 --source-group sg-00055e6ae2bc876ce
+
+
