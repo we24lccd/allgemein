@@ -98,3 +98,5 @@ WHERE condition;
 UPDATE Person
 SET Name = “Elton John”
 WHERE Id = 4;
+
+https://www.linode.com/docs/guides/configure-master-master-mysql-database-replication/
