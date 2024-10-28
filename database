@@ -68,6 +68,8 @@ Ví dụ 5: Xóa học sinh có tên "Jane Doe":
 
 DELETE FROM students WHERE name = "Jane Doe";
 
+
+
 SELECT studentID, FirstName, LastName, FirstName + ' ' + LastName AS FullName
 FROM student;
 
@@ -100,3 +102,71 @@ SET Name = “Elton John”
 WHERE Id = 4;
 
 https://www.linode.com/docs/guides/configure-master-master-mysql-database-replication/
+
+
+
+Nhập câu truy vấn SQL để truy vấn dữ liệu từ table, ví dụ
+SELECT * FROM "university_ranking_database"."university_ranking_eric" limit 10;
+
+
+
+Truy vấn tất cả thông tin về 10 trường đại học hàng đầu theo điểm tổng quát
+SELECT *
+FROM "university_ranking_database"."university_ranking_eric"
+ORDER BY "overall score" DESC
+LIMIT 10;
+
+
+
+Tìm các trường đại học có tỷ lệ sinh viên quốc tế cao nhất:
+SELECT "name of university", "international student"
+FROM "university_ranking_database"."university_ranking_eric"
+ORDER BY "international student" DESC
+LIMIT 5;
+
+
+
+Tìm trường đại học có điểm nghiên cứu cao nhất ở một địa điểm cụ thể:
+SELECT "name of university", "research score"
+FROM "university_ranking_database"."university_ranking_eric"
+WHERE "location" = 'United States'
+ORDER BY "research score" DESC
+LIMIT 5;
+
+Truy vấn trường đại học với tỷ lệ nữ
+SELECT "name of university", "female:male ratio"
+FROM "university_ranking_database"."university_ranking_eric"
+ORDER BY "female:male ratio" DESC
+LIMIT 5;
+
+Tìm các trường đại học có điểm giảng dạy và điểm nghiên cứu cao nhất:
+SELECT "name of university", "teaching score", "research score"
+FROM "university_ranking_database"."university_ranking_eric"
+ORDER BY "teaching score" DESC, "research score" DESC
+LIMIT 10;
+
+
+aws s3 mb s3://my-athena-bucket
+
+aws cloudformation package --template-file template.yaml --output-template-file packaged-template.yaml --s3-bucket my-athena-bucket
+
+aws cloudformation deploy --template-file template.yaml --stack-name AthenaSetupStack --capabilities CAPABILITY_NAMED_IAM
+
+aws cloudformation describe-stacks --stack-name AthenaSetupStack
+
+aws athena list-work-groups
+
+aws athena start-query-execution --query-string "SELECT * FROM my_table;" --query-execution-context Database=my_database --result-configuration OutputLocation=s3://my-athena-bucket/query-results/
+
+aws athena get-query-execution --query-execution-id <QueryExecutionId>
+
+aws athena get-query-results --query-execution-id <QueryExecutionId>
+
+aws sns create-topic --name MyAthenaResultsTopic
+
+aws sns subscribe --topic-arn <TopicArn> --protocol email --notification-endpoint myemail@example.com
+
+aws sns publish --topic-arn <TopicArn> --message "Athena query results are available at s3://my-athena-query-results/<QueryExecutionId>.csv"
+
+
+
