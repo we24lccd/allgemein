@@ -146,26 +146,37 @@ ORDER BY "teaching score" DESC, "research score" DESC
 LIMIT 10;
 
 
+- The following command helps in creating the Amazon S3 with unique bucket name here we are using my-athena-bucket as its name:
 aws s3 mb s3://my-athena-bucket
 
+- Package the cloudformation template using nested stacks or local files with the following command:
 aws cloudformation package --template-file template.yaml --output-template-file packaged-template.yaml --s3-bucket my-athena-bucket
 
+- Deploy the cloudformation stack with the following command:
 aws cloudformation deploy --template-file template.yaml --stack-name AthenaSetupStack --capabilities CAPABILITY_NAMED_IAM
 
+- Check the status of the deployment with the following command and ensure the stack status is `CREATE_COMPLETE` 
 aws cloudformation describe-stacks --stack-name AthenaSetupStack
 
+- List the Athena WorkGroups with the following command and verify that `MyWorkGroup` is listed.
 aws athena list-work-groups
 
+- Run the query from the AWS CLI using the following command:
 aws athena start-query-execution --query-string "SELECT * FROM my_table;" --query-execution-context Database=my_database --result-configuration OutputLocation=s3://my-athena-bucket/query-results/
 
+- Check the query execution status with the following command and make sure to replace the <QueryExecutionId> with your ID returned by the start query execution and the status is `SUCCEEDED`
 aws athena get-query-execution --query-execution-id <QueryExecutionId>
 
+- fetch the query results with the following commands:
 aws athena get-query-results --query-execution-id <QueryExecutionId>
 
+- It helps in creating the SNS Topic using the following command:
 aws sns create-topic --name MyAthenaResultsTopic
 
+- Execute the following command to subscribe to the topic and ensure to replace the <TopicArn> with the ARN of the SNS Topic created.
 aws sns subscribe --topic-arn <TopicArn> --protocol email --notification-endpoint myemail@example.com
 
+- publish the results of the notifications with the following command
 aws sns publish --topic-arn <TopicArn> --message "Athena query results are available at s3://my-athena-query-results/<QueryExecutionId>.csv"
 
 
