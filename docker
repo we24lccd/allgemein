@@ -60,8 +60,6 @@ FROM centos:latest
 # RUN dnf -y --disablerepo '*' --enablerepo=extras swap centos-linux-repos centos-stream-repos
 # RUN dnf -y distro-sync
 
-
-
 # Cập nhật các gói và cài vào đó HTTPD, HTOP, VIM
 RUN yum update -y
 RUN yum install httpd httpd-tools -y
