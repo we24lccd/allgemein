@@ -2,6 +2,11 @@ aws s3 ls [s3_link]
 aws s3 cp [s3_link] [des]
 aws sync [s3_link] [des]
 
+Để xóa toàn bộ bucket và nội dung của bucket, sử dụng lệnh s3 rb với cờ --force:
+aws s3 rm s3://bucket-name/doc --recursive
+
+aws s3 rb s3://bucket-name --force
+
 aws ecr create-repository -- repository-name nginx --region us-east-1 
 -> Lệnh này sẽ tạo một kho lưu trữ tên "nginx" trong vùng "us-east-1" của AWS ECR. Kho lưu trữ này sẽ được sử dụng để lưu trữ các image container Docker.
 
