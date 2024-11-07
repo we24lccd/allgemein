@@ -67,3 +67,7 @@ Monitor:
 
 Sử dụng Amazon CloudWatch để giám sát hiệu suất và trạng thái của ứng dụng của bạn.
 CloudWatch cung cấp các biểu đồ, báo cáo và cảnh báo để giúp bạn theo dõi các chỉ số quan trọng.
+
+git status
+git commit -m " "
+git push origin master
