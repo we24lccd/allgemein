@@ -38,3 +38,7 @@ kubectl logs my-pod
 kubectl exec: Dùng để thực thi một lệnh trong một container.
 Ví dụ:
 kubectl exec my-pod -- bash
+
+- kubelet:	Quản lý các pod trên từng node
+- kubeadm:	Khởi tạo và cấu hình cluster
+- kubectl:	Tương tác với kube-apiserver
