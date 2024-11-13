@@ -4,3 +4,30 @@ https://kubernetes.io/docs/concepts/architecture/
 
 - liệt kê và xem thông tin chi tiết về các node (nút) trong cụm Kubernetes:
 kubectl get nodes
+
+kubectl get: Dùng để lấy thông tin về các đối tượng trong cụm.
+Ví dụ:
+kubectl get pods: Liệt kê tất cả các pod đang chạy.
+kubectl get nodes: Liệt kê tất cả các node trong cụm.
+kubectl get services: Liệt kê tất cả các service.
+kubectl describe: Dùng để xem thông tin chi tiết về một đối tượng cụ thể.
+Ví dụ:
+kubectl describe pod my-pod: Xem thông tin chi tiết về pod có tên my-pod.
+kubectl create: Dùng để tạo một đối tượng mới.
+Ví dụ:
+kubectl create deployment my-deployment --image=nginx
+kubectl delete: Dùng để xóa một đối tượng.
+Ví dụ:
+kubectl delete deployment my-deployment
+kubectl apply: Dùng để tạo hoặc cập nhật một đối tượng từ một file YAML.
+Ví dụ:
+kubectl apply -f deployment.yaml
+kubectl edit: Dùng để chỉnh sửa trực tiếp một đối tượng.
+Ví dụ:
+kubectl edit deployment my-deployment
+kubectl logs: Dùng để xem log của một container trong một pod.
+Ví dụ:
+kubectl logs my-pod
+kubectl exec: Dùng để thực thi một lệnh trong một container.
+Ví dụ:
+kubectl exec my-pod -- bash
