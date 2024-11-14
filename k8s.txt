@@ -10,6 +10,7 @@ Ví dụ:
 kubectl get pods: Liệt kê tất cả các pod đang chạy.
 kubectl get nodes: Liệt kê tất cả các node trong cụm.
 kubectl get services: Liệt kê tất cả các service.
+kubectl get ns: Liệt kê các namespace 
 
 kubectl describe: Dùng để xem thông tin chi tiết về một đối tượng cụ thể.
 Ví dụ:
@@ -42,3 +43,5 @@ kubectl exec my-pod -- bash
 - kubelet:	Quản lý các pod trên từng node
 - kubeadm:	Khởi tạo và cấu hình cluster
 - kubectl:	Tương tác với kube-apiserver
+
+
