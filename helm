@@ -1,0 +1,44 @@
+# Thêm kho lưu trữ stable
+helm repo add stable https://kubernetes-charts.storage.googleapis.com
+
+# Cập nhật thông tin kho lưu trữ
+helm repo update
+
+# Tìm kiếm Chart nginx
+helm search repo nginx
+
+# Cài đặt Chart nginx với tên release là my-nginx
+helm install my-nginx stable/nginx
+
+# Nâng cấp Chart my-nginx
+helm upgrade my-nginx stable/nginx
+
+# Xóa Chart my-nginx
+helm delete my-nginx
+
+  Quản lý kho lưu trữ Chart
+helm repo add &lt;tên-kho> <url-kho>: Thêm một kho lưu trữ Chart mới.
+helm repo list: Liệt kê tất cả các kho lưu trữ Chart đã thêm.
+helm repo update: Cập nhật thông tin của tất cả các kho lưu trữ.
+helm search repo &lt;tên-chart>: Tìm kiếm một Chart trong các kho lưu trữ.
+Quản lý Chart
+
+helm install &lt;tên-release> &lt;tên-chart>: Cài đặt một Chart.
+Ví dụ: helm install my-nginx stable/nginx
+helm upgrade &lt;tên-release> &lt;tên-chart>: Nâng cấp một Chart đã cài đặt.
+helm rollback &lt;tên-release> &lt;số-phiên-bản>: Quay trở lại một phiên bản trước đó của Chart.
+helm list: Liệt kê tất cả các Chart đã được cài đặt.
+helm delete &lt;tên-release>: Xóa một Chart đã cài đặt.
+helm status &lt;tên-release>: Kiểm tra trạng thái của một Chart.
+  
+Quản lý Chart (tiếp theo)
+helm get manifest &lt;tên-release>: Hiển thị cấu hình YAML của Chart đã cài đặt.
+helm get values &lt;tên-release>: Hiển thị các giá trị cấu hình của Chart.
+helm template &lt;tên-chart>: Render template của Chart mà không cần cài đặt.
+  
+Tạo Chart
+helm create &lt;tên-chart>: Tạo một Chart mới.
+  
+Tùy chỉnh Chart
+Values.yaml: Tệp này chứa các giá trị cấu hình mặc định của Chart. Bạn có thể tùy chỉnh các giá trị này khi cài đặt Chart.
+templates: Thư mục này chứa các template để tạo các tài nguyên Kubernetes.
