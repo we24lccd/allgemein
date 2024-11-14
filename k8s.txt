@@ -19,6 +19,7 @@ kubectl describe pod my-pod: Xem thông tin chi tiết về pod có tên my-pod.
 kubectl create: Dùng để tạo một đối tượng mới.
 Ví dụ:
 kubectl create deployment my-deployment --image=nginx
+kubectl create ns abc 
 
 kubectl delete: Dùng để xóa một đối tượng.
 Ví dụ:
