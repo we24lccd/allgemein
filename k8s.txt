@@ -53,4 +53,7 @@ Kiểm tra lịch sử các phiên bản của Deployment: kubectl rollout histo
 - kubeadm:	Khởi tạo và cấu hình cluster
 - kubectl:	Tương tác với kube-apiserver
 
-
+- ClusterIP: Sử dụng cho các dịch vụ nội bộ.
+- NodePort: Sử dụng khi cần truy cập từ bên ngoài nhưng không muốn sử dụng load balancer bên ngoài.
+- LoadBalancer: Sử dụng khi cần cung cấp dịch vụ cho người dùng bên ngoài.
+- ExternalName: Sử dụng để kết nối với các dịch vụ bên ngoài.
