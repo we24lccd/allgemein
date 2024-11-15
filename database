@@ -1,32 +1,29 @@
 Các câu lệnh cơ bản trong cơ sở dữ liệu (Database)
 1. Lựa chọn cơ sở dữ liệu:
-
 USE database_name;
 
 2. Tạo bảng:
-
 CREATE TABLE table_name ( column_name1 data_type1, column_name2 data_type2, ... );
 
 3. Chèn dữ liệu:
-
 INSERT INTO table_name (column_name1, column_name2, ...) VALUES (value1, value2, ...);
 
 4. Lấy dữ liệu:
-
 SELECT column_name1, column_name2, ... FROM table_name;
 SELECT * FROM table_name; (lấy tất cả các cột)
 
 5. Cập nhật dữ liệu:
-
 UPDATE table_name SET column_name1 = new_value1, column_name2 = new_value2, ... WHERE condition;
 
 6. Xóa dữ liệu:
-
 DELETE FROM table_name WHERE condition;
 
 7. Xóa bảng:
-
 DROP TABLE table_name;
+
+8. Lệnh GRANT trong MySQL: Cấp quyền truy cập cơ sở dữ liệu
+GRANT [type of permission] ON [database name].[table name] TO '[username]'@'hostname';
+GRANT SELECT, INSERT ON mydatabase.customers TO 'user1'@'%';
 
 Ngoài ra, còn có nhiều câu lệnh nâng cao khác:
 
