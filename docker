@@ -204,3 +204,40 @@ docker-compose --version
 
 - Kiểm tra chi tiết thông tin về một container, image hoặc volume cụ thể:
 Docker inspect 
+
+Các thành phần chính trong Dockerfile: 
+FROM: Chỉ định image cơ sở để xây dựng image mới. Ví dụ: FROM node:18.
+WORKDIR: Thiết lập thư mục làm việc mặc định trong container. Ví dụ: WORKDIR /app.
+RUN: Thực thi một lệnh Unix shell trong image. Ví dụ: RUN npm install.
+COPY: Sao chép các file hoặc thư mục từ máy chủ cục bộ vào image. Ví dụ: COPY package.json ./.
+ADD: Tương tự như COPY nhưng có thêm một số tính năng như tự động giải nén file tar.
+EXPOSE: Khai báo các cổng mà container sẽ lắng nghe. Ví dụ: EXPOSE 8080.
+ENV: Thiết lập các biến môi trường cho container. Ví dụ: ENV NODE_ENV production.
+CMD: Chỉ định lệnh mặc định được thực thi khi container khởi động. Ví dụ: CMD ["npm", "start"].
+ENTRYPOINT: Tương tự như CMD nhưng có ưu tiên cao hơn và không bị ghi đè bởi lệnh khi chạy container.
+VOLUME: Tạo một volume để lưu trữ dữ liệu một cách persist. Ví dụ: VOLUME /app/data.
+Các chỉ thị nâng cao:
+USER: Chuyển đổi sang user khác để thực hiện các lệnh tiếp theo.
+ARG: Định nghĩa các biến có thể được truyền vào khi xây dựng image.
+LABEL: Thêm các nhãn (metadata) vào image.
+HEALTHCHECK: Định nghĩa các kiểm tra sức khỏe cho container.
+ONBUILD: Thêm các chỉ thị sẽ được thực thi khi image này được sử dụng làm base image cho một image khác.
+
+# Sử dụng Node.js 18 làm base image
+FROM node:18
+
+# Thiết lập thư mục làm việc
+WORKDIR /app
+
+# Sao chép package.json và cài đặt dependencies
+COPY package*.json ./
+RUN npm install
+
+# Sao chép toàn bộ source code vào container
+COPY . .
+
+# Expoose cổng 3000
+EXPOSE 3000
+
+# Lệnh mặc định khi khởi động container
+CMD ["npm", "start"]
