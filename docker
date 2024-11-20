@@ -184,7 +184,7 @@ Một số tùy chọn khác:
 --privileged: Chạy container với quyền root đầy đủ. Cẩn trọng khi sử dụng tùy chọn này.
 
 
-Script cài đặt Docker và docker-compose
+- Script cài đặt Docker và docker-compose
 
 #!/bin/bash
 
@@ -200,3 +200,7 @@ sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-
 sudo chmod +x /usr/local/bin/docker-compose
 docker --version
 docker-compose --version
+
+
+- Kiểm tra chi tiết thông tin về một container, image hoặc volume cụ thể:
+Docker inspect 
