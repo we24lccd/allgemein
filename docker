@@ -241,3 +241,5 @@ EXPOSE 3000
 
 # Lệnh mặc định khi khởi động container
 CMD ["npm", "start"]
+
+https://docs.docker.com/reference/cli/docker/image/
