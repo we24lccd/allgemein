@@ -71,3 +71,13 @@ CloudWatch cung cấp các biểu đồ, báo cáo và cảnh báo để giúp b
 git status
 git commit -m " "
 git push origin master
+
+
+git fetch origin master
+git merge origin master
+
+git fetch origin master:tmp
+git rebase tmp
+git push origin HEAD:master
+git branch -D tmp
+
