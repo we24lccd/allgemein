@@ -175,9 +175,6 @@ dos2unix
 # 4. Entry: Month of the year when the process will be started [1-12]
 # 5. Entry: Weekday when the process will be started [0-6] [0 is Sunday]
 
-tìm ký tự trên toàn bộ máy: 
-
-grep "abc" *.*
 
 Cách Kiểm Tra Các Thư Viện (Lib) Đã Cài Đặt Trong Linux
 dpkg -l
@@ -260,8 +257,9 @@ Chú ý: Việc kiểm tra và quản lý các phiên SSH là rất quan trọng
 tiến trình trong linux:
 https://www.geeksforgeeks.org/pstree-command-in-linux-with-examples/ 
 
-tìm ký tự abc trong path /home
+tìm ký tự abc ở các file tại đường dẫn /home
 find /home -type f -exec grep -Hn "abc" {} \; 
+grep "abc" *.*
 
 Tìm file trong máy:
 find / -name "*.ycc"
