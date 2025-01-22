@@ -364,5 +364,6 @@ Một số lệnh khác liên quan:
 
 https://tel4vn.edu.vn/top-30-cau-lenh-thuong-su-dung-trong-devops/
 
+Đo cpu: sar -u 60 60
 
 	
