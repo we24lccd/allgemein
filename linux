@@ -254,7 +254,7 @@ last: Hiển thị lịch sử đăng nhập của các người dùng.
 whois: Hiển thị thông tin về một tên miền hoặc địa chỉ IP.
 Chú ý: Việc kiểm tra và quản lý các phiên SSH là rất quan trọng để đảm bảo bảo mật cho hệ thống của bạn. Bạn nên thường xuyên kiểm tra và cấu hình các dịch vụ SSH để ngăn chặn các cuộc tấn công từ bên ngoài.
 
-tiến trình trong linux:
+★ tiến trình trong linux:
 https://www.geeksforgeeks.org/pstree-command-in-linux-with-examples/ 
 
 tìm ký tự abc ở các file tại đường dẫn /home
