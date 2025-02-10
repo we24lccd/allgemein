@@ -54,3 +54,5 @@ Add NFS Protocol Rule: To make sure the EC2s and EFS play nicely, add an NFS rul
 aws ec2 authorize-security-group-ingress --group-id sg-00055e6ae2bc876ce --protocol tcp --port 2049 --source-group sg-00055e6ae2bc876ce
 
 https://www.geeksforgeeks.org/aws-tutorial/?ref=outind
+
+6. aws s3 cp /path/to/local/folder s3://your-bucket-name/destination/path --recursive
