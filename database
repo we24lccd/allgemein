@@ -179,5 +179,6 @@ aws sns publish --topic-arn <TopicArn> --message "Athena query results are avail
 - Cài đặt mysql trên ec2
 https://awswithatiq.com/how-to-install-mysql-on-amazon-linux-2023-fedora-version/
 
-
+- Kết nối tới mysql
+mysql -h <endpoint> -P <port> -u <username> -p
 
