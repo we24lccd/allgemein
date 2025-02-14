@@ -176,5 +176,8 @@ aws sns subscribe --topic-arn <TopicArn> --protocol email --notification-endpoin
 - publish the results of the notifications with the following command
 aws sns publish --topic-arn <TopicArn> --message "Athena query results are available at s3://my-athena-query-results/<QueryExecutionId>.csv"
 
+- Cài đặt mysql trên ec2
+https://awswithatiq.com/how-to-install-mysql-on-amazon-linux-2023-fedora-version/
+
 
 
