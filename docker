@@ -243,3 +243,25 @@ EXPOSE 3000
 CMD ["npm", "start"]
 
 https://docs.docker.com/reference/cli/docker/image/
+
+* luồng chạy một container trong docker
+Tạo image: Bước đầu tiên là tạo một Docker image. Image này chứa tất cả các thành phần cần thiết để chạy ứng dụng của bạn, bao gồm mã nguồn, thư viện, dependencies, và cấu hình. Bạn có thể tạo image bằng cách viết Dockerfile, một file chứa các hướng dẫn để xây dựng image.
+
+Khởi tạo container: Khi bạn chạy lệnh docker run, Docker sẽ tạo một container từ image. Container này là một môi trường biệt lập, chứa ứng dụng của bạn và các thành phần phụ thuộc của nó.
+
+Khởi động container: Sau khi container được tạo, nó sẽ được khởi động. Quá trình khởi động bao gồm việc cấp phát tài nguyên (CPU, RAM, disk space) cho container, thiết lập mạng, và chạy các tiến trình được định nghĩa trong image.
+
+Chạy ứng dụng: Khi container đã được khởi động, ứng dụng của bạn sẽ bắt đầu chạy bên trong container. Ứng dụng này có thể tương tác với môi trường bên trong container, bao gồm file system, network, và các tiến trình khác.
+
+Vòng đời container: Container có một vòng đời nhất định, bao gồm các trạng thái như Created, Running, Exited. Bạn có thể quản lý vòng đời này bằng các lệnh như docker start, docker stop, docker restart, và docker kill.
+
+Dừng container: Khi bạn muốn dừng ứng dụng, bạn có thể dừng container. Khi container bị dừng, các tiến trình bên trong nó sẽ bị dừng và tài nguyên sẽ được giải phóng.
+
+Xóa container: Nếu bạn không cần container nữa, bạn có thể xóa nó. Khi container bị xóa, tất cả dữ liệu bên trong nó sẽ bị mất.
+
+Các yếu tố ảnh hưởng đến luồng chạy của container:
+
+Dockerfile: Nội dung của Dockerfile quyết định cách image được xây dựng và container được khởi động.
+Lệnh docker run: Các tùy chọn được sử dụng trong lệnh docker run (ví dụ: port mapping, volume mounting, environment variables) ảnh hưởng đến cách container hoạt động.
+Ứng dụng bên trong container: Ứng dụng của bạn và cách nó được thiết kế sẽ ảnh hưởng đến luồng chạy của container.
+Tài nguyên hệ thống: Tài nguyên của máy chủ (CPU, RAM, disk space) có thể ảnh hưởng đến hiệu suất của container.
