@@ -265,3 +265,6 @@ Dockerfile: Nội dung của Dockerfile quyết định cách image được xâ
 Lệnh docker run: Các tùy chọn được sử dụng trong lệnh docker run (ví dụ: port mapping, volume mounting, environment variables) ảnh hưởng đến cách container hoạt động.
 Ứng dụng bên trong container: Ứng dụng của bạn và cách nó được thiết kế sẽ ảnh hưởng đến luồng chạy của container.
 Tài nguyên hệ thống: Tài nguyên của máy chủ (CPU, RAM, disk space) có thể ảnh hưởng đến hiệu suất của container.
+
+* install docker on amazon linux
+yum install -y docker
