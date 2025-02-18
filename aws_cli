@@ -56,3 +56,13 @@ aws ec2 authorize-security-group-ingress --group-id sg-00055e6ae2bc876ce --proto
 https://www.geeksforgeeks.org/aws-tutorial/?ref=outind
 
 6. aws s3 cp /path/to/local/folder s3://your-bucket-name/destination/path --recursive
+
+*Cách dùng terraform
+# Khởi tạo
+terraform init
+
+# Kiểm tra cấu hình
+terraform plan
+
+# Áp dụng thay đổi
+terraform apply
