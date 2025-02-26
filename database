@@ -182,3 +182,5 @@ https://awswithatiq.com/how-to-install-mysql-on-amazon-linux-2023-fedora-version
 - Kết nối tới mysql
 mysql -h <endpoint> -P <port> -u <username> -p
 
+- Cài đặt postgresql trên ec2
+https://hbayraktar.medium.com/how-to-install-postgresql-15-on-amazon-linux-2023-a-step-by-step-guide-57eebb7ad9fc
