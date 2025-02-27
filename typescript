@@ -1,0 +1,8 @@
+Hiểu cấu trúc dự án:
+
+bin/: Chứa điểm vào của ứng dụng CDK.
+lib/: Chứa các stack và construct của bạn.
+test/: Chứa các bài kiểm tra cho ứng dụng CDK.
+cdk.json: Chứa các cài đặt cấu hình cho CDK.
+package.json: Chứa các thông tin về gói npm và các dependencies.
+tsconfig.json: Chứa các cài đặt cấu hình cho trình biên dịch TypeScript.
