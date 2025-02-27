@@ -1,4 +1,22 @@
-Hiểu cấu trúc dự án:
+AWS CDK (AWS Cloud Development Kit) cho phép bạn định nghĩa cơ sở hạ tầng đám mây của mình bằng mã, sử dụng các ngôn ngữ lập trình quen thuộc như TypeScript. Dưới đây là hướng dẫn lập trình AWS CDK cơ bản với TypeScript:
+
+1. Cài đặt môi trường:
+
+Node.js và npm:
+Tải và cài đặt Node.js từ trang web chính thức: [https://nodejs.org/](https://nodejs.org/)
+npm thường được cài đặt cùng với Node.js.
+Kiểm tra cài đặt bằng lệnh: node -v và npm -v
+AWS CLI:
+Tải và cài đặt AWS CLI từ trang web chính thức: [https://aws.amazon.com/cli/](https://aws.amazon.com/cli/)
+Cấu hình AWS CLI bằng lệnh: aws configure
+AWS CDK CLI:
+Cài đặt AWS CDK CLI bằng lệnh: npm install -g aws-cdk
+Kiểm tra cài đặt bằng lệnh: cdk --version
+2. Khởi tạo dự án CDK:
+
+Tạo một thư mục cho dự án của bạn và chạy lệnh: cdk init app --language typescript
+Lệnh này sẽ tạo một dự án CDK TypeScript mẫu.
+3. Hiểu cấu trúc dự án:
 
 bin/: Chứa điểm vào của ứng dụng CDK.
 lib/: Chứa các stack và construct của bạn.
@@ -6,3 +24,67 @@ test/: Chứa các bài kiểm tra cho ứng dụng CDK.
 cdk.json: Chứa các cài đặt cấu hình cho CDK.
 package.json: Chứa các thông tin về gói npm và các dependencies.
 tsconfig.json: Chứa các cài đặt cấu hình cho trình biên dịch TypeScript.
+4. Viết stack CDK:
+
+Mở tệp lib/your-stack.ts và bắt đầu định nghĩa cơ sở hạ tầng.
+Ví dụ, tạo một S3 bucket đơn giản:
+TypeScript
+
+import * as cdk from 'aws-cdk-lib';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import { Construct } from 'constructs';
+
+export class YourStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    new s3.Bucket(this, 'MyFirstBucket', {
+      versioned: true,
+    });
+  }
+}
+Trong ví dụ này:
+Nhập các thư viện aws-cdk-lib và aws-cdk-lib/aws-s3.
+Tạo lớp YourStack kế thừa từ cdk.Stack.
+Trong hàm tạo, tạo S3 bucket bằng new s3.Bucket.
+5. Triển khai stack:
+
+Chạy lệnh: cdk deploy
+CDK sẽ hiển thị bản xem trước và yêu cầu xác nhận.
+6. Các khái niệm CDK quan trọng:
+
+Stacks: Đơn vị triển khai cơ bản.
+Constructs: Các thành phần xây dựng cơ sở hạ tầng.
+Props: Các thuộc tính cấu hình cho constructs.
+7. Các thư viện CDK:
+
+aws-cdk-lib: Chứa constructs cho các dịch vụ AWS.
+constructs: Chứa constructs cơ bản.
+8. Các bước tiếp theo:
+
+Khám phá các thư viện CDK và tìm hiểu các constructs.
+Tìm hiểu về các mẫu thiết kế và phương pháp hay nhất.
+Xây dựng các ứng dụng CDK phức tạp hơn.
+Sử dụng TypeScript để tăng cường khả năng bảo trì và độ tin cậy.
+Ví dụ nâng cao:
+
+Tạo Lambda function:
+TypeScript
+
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+// ...
+
+new lambda.Function(this, 'MyLambdaFunction', {
+  runtime: lambda.Runtime.NODEJS_14_X,
+  handler: 'index.handler',
+  code: lambda.Code.fromAsset('lambda'),
+});
+Tạo API Gateway:
+TypeScript
+
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+// ...
+
+const api = new apigateway.RestApi(this, 'MyApi');
+api.root.addMethod('GET', new apigateway.LambdaIntegration(myLambdaFunction));
+Bằng cách sử dụng TypeScript, bạn có thể tận dụng các tính năng như kiểu tĩnh, giao diện và lớp để viết mã CDK rõ ràng, dễ bảo trì và có thể tái sử dụng.
