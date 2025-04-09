@@ -1,0 +1,31 @@
+1. Kiểm tra system log với grep
+Crontab thường ghi log vào system log (syslog). Trên Amazon Linux 2023, bạn có thể kiểm tra bằng lệnh:
+
+sudo grep CRON /var/log/messages
+
+sudo grep CRON /var/log/syslog
+2. Kiểm tra log cụ thể của cron
+Nếu cron có file log riêng, thử:
+
+sudo grep CRON /var/log/cron
+
+3. Xem log journald (nếu sử dụng systemd)
+Amazon Linux 2023 sử dụng systemd, bạn có thể dùng:
+
+sudo journalctl -u crond.service
+
+hoặc lọc với grep:
+
+sudo journalctl -u crond.service | grep CRON
+
+4. Kiểm tra log của từng user
+Các cron job của user thường được ghi vào:
+
+sudo grep CRON /var/log/cron | grep username
+
+5. Kiểm tra mail của cron
+Cron thường gửi output qua email, kiểm tra mail của user:
+
+sudo cat /var/spool/mail/username
+
+sudo grep CRON /var/spool/mail/username
