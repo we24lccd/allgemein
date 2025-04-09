@@ -66,3 +66,67 @@ terraform plan
 
 # Áp dụng thay đổi
 terraform apply
+
+1. Xóa một file cụ thể
+aws s3 rm s3://bucket-name/path/to/file.txt
+
+2. Xóa nhiều file cùng lúc
+
+aws s3 rm s3://bucket-name/ --recursive --exclude "*" --include "*.log"
+
+3. Xóa toàn bộ thư mục
+
+aws s3 rm s3://bucket-name/folder/ --recursive
+
+4. Xóa toàn bộ nội dung bucket (cẩn thận!)
+
+aws s3 rm s3://bucket-name/ --recursive
+
+5. Xóa file theo điều kiện thời gian (kết hợp với AWS CLI và shell)
+
+# Xóa các file cũ hơn 30 ngày
+aws s3 ls s3://bucket-name/ --recursive | while read -r line; do
+  createDate=$(echo $line | awk '{print $1" "$2}')
+  createDate=$(date -d "$createDate" +%s)
+  olderThan=$(date -d "30 days ago" +%s)
+  if [[ $createDate -lt $olderThan ]]; then
+    fileName=$(echo $line | awk '{print $4}')
+    aws s3 rm "s3://bucket-name/$fileName"
+  fi
+done
+6. Sử dụng file manifest để xóa nhiều file
+Tạo file delete.txt:
+
+s3://bucket-name/file1.txt
+s3://bucket-name/path/to/file2.jpg
+Rồi chạy lệnh:
+
+aws s3api delete-objects --bucket bucket-name --delete file://delete.txt
+7. Xóa các file có prefix cụ thể
+
+aws s3 rm s3://bucket-name/prefix/ --recursive
+8. Xóa các file version (nếu bucket có versioning)
+
+# Lấy danh sách các version
+aws s3api list-object-versions --bucket bucket-name --prefix path/to/file
+
+# Xóa version cụ thể
+aws s3api delete-object --bucket bucket-name --key path/to/file --version-id version-id
+Lưu ý quan trọng:
+Luôn kiểm tra kỹ lệnh trước khi thực thi, đặc biệt với --recursive
+
+Có thể dùng --dryrun để kiểm tra trước khi xóa thật:
+
+aws s3 rm s3://bucket-name/ --recursive --dryrun
+Đảm bảo bạn có quyền s3:DeleteObject và s3:DeleteObjectVersion (nếu dùng versioning)
+
+Các file đã xóa không thể khôi phục trừ khi bucket có versioning được bật
+
+Cách an toàn hơn:
+Nếu muốn an toàn, có thể di chuyển file sang thư mục "trash" trước khi xóa hẳn:
+
+# Di chuyển file sang thư mục trash
+aws s3 mv s3://bucket-name/path/to/file s3://bucket-name/trash/path/to/file
+
+# Sau đó xóa khi đã chắc chắn
+aws s3 rm s3://bucket-name/trash/ --recursive
