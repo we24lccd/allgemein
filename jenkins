@@ -1,6 +1,6 @@
 https://tel4vn.edu.vn/khai-niem-ve-jenkins-pipeline-cho-nguoi-moi-bat-dau/
 
-- Cài đặt jenkins 
+- Cài đặt jenkins trên ubuntu
 Bước 1: Cập nhật hệ thống
 
 Đảm bảo hệ thống của bạn được cập nhật:
@@ -64,3 +64,5 @@ Bước 8: Lấy mật khẩu quản trị viên ban đầu
 Lệnh hiển thị mật khẩu ban đầu.
 
 sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+- Gỡ jenkins trên ubuntu
