@@ -1,1 +1,66 @@
 https://tel4vn.edu.vn/khai-niem-ve-jenkins-pipeline-cho-nguoi-moi-bat-dau/
+
+- Cài đặt jenkins 
+Bước 1: Cập nhật hệ thống
+
+Đảm bảo hệ thống của bạn được cập nhật:
+
+sudo apt update
+sudo apt upgrade -y
+
+Bước 2: Cài đặt Java
+
+Jenkins yêu cầu Java để hoạt động. Cài đặt OpenJDK 11 hoặc 17:
+
+sudo apt install openjdk-17-jdk -y
+
+Xác minh cài đặt Java:
+
+java -version
+
+Bước 3: Thêm kho lưu trữ Jenkins
+
+Thêm khóa GPG của Jenkins:
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+Thêm kho lưu trữ Jenkins vào danh sách nguồn phần mềm:
+
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+Cập nhật danh sách gói phần mềm:
+
+sudo apt update
+
+Bước 4: Cài đặt Jenkins
+
+Cài đặt Jenkins:
+
+sudo apt install jenkins -y
+
+Bước 5: Khởi động và kích hoạt Jenkins
+
+Khởi động dịch vụ Jenkins:
+
+sudo systemctl start jenkins
+
+Kích hoạt Jenkins khởi động cùng hệ thống:
+
+sudo systemctl enable jenkins
+Kiểm tra trạng thái dịch vụ Jenkins:
+
+sudo systemctl status jenkins
+
+Bước 6: Mở tường lửa (nếu cần)
+
+Nếu tường lửa UFW đang hoạt động, hãy mở cổng 8080:
+
+sudo ufw allow 8080
+
+Bước 7: Truy cập Jenkins qua trình duyệt web
+
+Mở trình duyệt web và truy cập: http://<địa_chỉ_IP_máy_chủ>:8080
+
+Bước 8: Lấy mật khẩu quản trị viên ban đầu
+
+Lệnh hiển thị mật khẩu ban đầu.
+
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
