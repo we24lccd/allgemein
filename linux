@@ -367,3 +367,10 @@ https://tel4vn.edu.vn/top-30-cau-lenh-thuong-su-dung-trong-devops/
 - Đo cpu: sar -u 60 60
 
 - kiểm tra các gói đã cài đặt
+
+- ssh bằng mobaxterm
+sudo systemctl status ssh (to check status)
+sudo systemctl start ssh (to start)
+sudo systemctl enable ssh (to enable on boot)
+Linux (ufw): sudo ufw allow 22
+Linux (firewalld): sudo firewall-cmd --permanent --add-port=22/tcp && sudo firewall-cmd --reload
