@@ -374,3 +374,45 @@ sudo systemctl start ssh (to start)
 sudo systemctl enable ssh (to enable on boot)
 Linux (ufw): sudo ufw allow 22
 Linux (firewalld): sudo firewall-cmd --permanent --add-port=22/tcp && sudo firewall-cmd --reload
+
+✅ Bước 1: Kiểm tra swap hiện tại
+
+swapon --show
+free -h
+Nếu không thấy gì ở swapon --show → chưa có swap.
+
+🧱 Bước 2: Tạo file swap (ví dụ: 2GB)
+
+sudo fallocate -l 2G /swapfile
+Nếu fallocate không hỗ trợ:
+
+sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+
+🔒 Bước 3: Cấp quyền đúng cho file
+
+sudo chmod 600 /swapfile
+⚙️ Bước 4: Biến file thành swap
+
+sudo mkswap /swapfile
+🚀 Bước 5: Kích hoạt swap
+
+sudo swapon /swapfile
+Kiểm tra lại:
+
+swapon --show
+🔁 Bước 6: Kích hoạt vĩnh viễn (sau reboot)
+Thêm dòng sau vào cuối file /etc/fstab:
+
+/swapfile none swap sw 0 0
+sudo nano /etc/fstab
+
+🎛️ Bước 7: (Tuỳ chọn) Tinh chỉnh hệ thống swap
+Giảm độ ưu tiên dùng swap nếu bạn muốn dùng RAM tối đa trước:
+
+sudo sysctl vm.swappiness=10
+Mặc định là 60. Dùng 10 để hạn chế swap chỉ khi RAM thực sự thiếu.
+
+Để đặt vĩnh viễn:
+
+echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+
