@@ -416,3 +416,43 @@ Mặc định là 60. Dùng 10 để hạn chế swap chỉ khi RAM thực sự 
 
 echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
 
+# sửa gateway:
+nmcli con mod ens160 ipv4.gateway 192.168.102.2
+nmcli con mod ens160 ipv4.method auto
+nmcli con up ens160
+
+#thông tin cấu hình mạng
+nmcli con show
+
+#kiểm tra cấu hình định tuyến
+ip route
+
+#thêm default route
+sudo ip route add default via <gateway_IP>
+
+#Kiểm tra firewalld, iptables
+sudo systemctl status firewalld
+sudo iptables -L -n
+
+#restart mạng
+sudo nmcli networking off
+sudo nmcli networking on
+
+#cấu hình ip 
+# Gán IP tĩnh
+sudo ip addr add 192.168.1.100/24 dev ens33
+
+# Gán default gateway
+sudo ip route add default via 192.168.1.1
+
+# Gán DNS tạm thời
+echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+
+# Đặt IP tĩnh, gateway, DNS
+sudo nmcli con mod ens33 ipv4.addresses 192.168.1.100/24
+sudo nmcli con mod ens33 ipv4.gateway 192.168.1.1
+sudo nmcli con mod ens33 ipv4.dns "8.8.8.8 1.1.1.1"
+sudo nmcli con mod ens33 ipv4.method manual
+
+# Áp dụng thay đổi
+sudo nmcli con up ens33
