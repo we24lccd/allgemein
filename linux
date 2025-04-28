@@ -369,7 +369,14 @@ https://tel4vn.edu.vn/top-30-cau-lenh-thuong-su-dung-trong-devops/
 - kiểm tra các gói đã cài đặt:   apt list --installed
   dnf list installed
 
-- ssh bằng mobaxterm
+- ssh bằng mobaxterm:
+
+sudo apt update
+sudo apt install openssh-server
+sudo yum install openssh-server
+sudo systemctl start ssh
+sudo service sshd start
+
 sudo systemctl status ssh (to check status)
 sudo systemctl start ssh (to start)
 sudo systemctl enable ssh (to enable on boot)
