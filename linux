@@ -464,3 +464,16 @@ sudo nmcli con mod ens33 ipv4.method manual
 
 # Áp dụng thay đổi
 sudo nmcli con up ens33
+
+# Mở rộng phân vùng logic (LVM)
+Các bước mở rộng phân vùng LVM:
+
+Kiểm tra nhóm và phân vùng logic: Đầu tiên, kiểm tra kích thước của nhóm và phân vùng logic.
+sudo vgdisplay
+sudo lvdisplay
+
+Mở rộng phân vùng logic: Nếu nhóm volume (ubuntu-vg) còn dung lượng trống, bạn có thể mở rộng phân vùng logic ubuntu-lv để sử dụng thêm dung lượng từ sda3. Ví dụ:
+sudo lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
+
+Mở rộng hệ thống tệp: Sau khi mở rộng phân vùng, bạn cần phải thay đổi kích thước hệ thống tệp để nhận diện dung lượng mới:
+sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
