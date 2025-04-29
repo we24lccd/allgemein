@@ -477,3 +477,85 @@ sudo lvextend -l +100%FREE /dev/ubuntu-vg/ubuntu-lv
 
 Mở rộng hệ thống tệp: Sau khi mở rộng phân vùng, bạn cần phải thay đổi kích thước hệ thống tệp để nhận diện dung lượng mới:
 sudo resize2fs /dev/ubuntu-vg/ubuntu-lv
+
+
+- UBUNTU: 
+✅ 1. DỌN /var: cache, logs, apt, docker
+# Xoá cache apt
+sudo apt clean
+sudo apt autoclean
+
+# Xoá log cũ
+sudo journalctl --vacuum-time=7d
+sudo rm -rf /var/log/*.gz /var/log/*.[0-9] /var/log/**/*.gz /var/log/**/*.[0-9]
+
+# Xoá cache của systemd
+sudo du -sh /var/lib/systemd/coredump
+sudo rm -rf /var/lib/systemd/coredump/*
+
+# Xoá Docker data (nếu không dùng nữa)
+sudo docker system prune -a
+✅ 2. DỌN /usr: gỡ phần mềm không cần thiết
+
+# Xem app nặng nhất
+dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 20 | less
+
+# Gỡ một số app nếu không cần (ví dụ LibreOffice, Firefox)
+sudo apt remove --purge libreoffice* firefox thunderbird
+
+# Gỡ sạch mọi thứ không cần
+sudo apt autoremove --purge
+✅ 3. XÓA swap.img (nếu không dùng swap file)
+⚠️ Chỉ làm nếu bạn hiểu rõ swap là gì và chắc chắn không cần.
+
+sudo swapoff /swap.img
+sudo rm /swap.img
+sudo sed -i '/swap.img/d' /etc/fstab
+✅ 4. DỌN /boot (nhiều kernel cũ)
+
+# Xem kernel đang dùng
+uname -r
+
+# Liệt kê các kernel khác (không phải kernel hiện tại)
+dpkg --list | grep linux-image
+
+# Gỡ các kernel cũ
+sudo apt remove --purge linux-image-5.x.x-xx-generic  # thay bằng tên kernel cũ
+sudo update-grub
+✅ 5. XÓA SNAP (nếu không dùng Snap apps)
+
+# Xóa tất cả Snap
+snap list | awk 'NR>1 {print $1}' | xargs -n1 sudo snap remove --purge
+sudo apt purge snapd
+sudo rm -rf ~/snap /snap /var/snap /var/lib/snapd
+✅ 6. DỌN /tmp, /var/tmp
+
+sudo rm -rf /tmp/*
+sudo rm -rf /var/tmp/*
+
+- ALMA LINUX
+✅ 1. Xoá cache của DNF/YUM
+
+sudo dnf clean all
+sudo rm -rf /var/cache/dnf
+✅ 2. Gỡ các package không còn cần
+
+sudo dnf autoremove
+✅ 3. Xoá log cũ và journal logs
+
+sudo journalctl --vacuum-time=7d
+sudo rm -rf /var/log/*.gz /var/log/*.[0-9] /var/log/**/*.gz /var/log/**/*.[0-9]
+✅ 4. Xoá file tạm và cache khác
+
+sudo rm -rf /tmp/*
+sudo rm -rf /var/tmp/*
+✅ 5. Xoá core dumps nếu có
+
+sudo rm -rf /var/lib/systemd/coredump/*
+✅ 6. Xoá Docker data (nếu có)
+
+sudo docker system prune -a
+✅ 7. Gỡ Snap (nếu có)
+
+sudo dnf remove snapd -y
+sudo rm -rf ~/snap /snap /var/snap /var/lib/snapd
