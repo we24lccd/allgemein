@@ -1,0 +1,8 @@
+- Xóa service trên windows 
++ Dùng sc delete trong CMD:
+sc delete TÊN_SERVICE
+
++ Dùng PowerShell:
+Get-Service -Name "TÊN_SERVICE"
+Stop-Service -Name "TÊN_SERVICE" -Force
+sc.exe delete "TÊN_SERVICE"
