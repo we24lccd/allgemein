@@ -6,3 +6,7 @@ sc delete TÊN_SERVICE
 Get-Service -Name "TÊN_SERVICE"
 Stop-Service -Name "TÊN_SERVICE" -Force
 sc.exe delete "TÊN_SERVICE"
+
+Restart-Service CheckMultiServices
+Stop-Service CheckMultiServices
+Start-Service CheckMultiServices
