@@ -268,3 +268,7 @@ Tài nguyên hệ thống: Tài nguyên của máy chủ (CPU, RAM, disk space) 
 
 * install docker on amazon linux
 yum install -y docker
+
+- chạy web app:
+docker build -t money-goal-app .
+docker run -p 5000:5000 -v ${PWD}/data.json:/app/data.json money-goal-app
