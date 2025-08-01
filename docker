@@ -92,8 +92,6 @@ https://xuanthulab.net/su-dung-dockerfile-de-tu-dong-tao-cac-image-trong-docker.
 
 docker run -d --restart=always -p 3001:3001 -v uptime-kuma:/app/data --name uptime-kuma louislam/uptime-kuma:1
 
-
-
 docker search ubuntu 
 docker pull ubuntu:18.04 
 docker image ls 
@@ -265,6 +263,114 @@ Dockerfile: Nội dung của Dockerfile quyết định cách image được xâ
 Lệnh docker run: Các tùy chọn được sử dụng trong lệnh docker run (ví dụ: port mapping, volume mounting, environment variables) ảnh hưởng đến cách container hoạt động.
 Ứng dụng bên trong container: Ứng dụng của bạn và cách nó được thiết kế sẽ ảnh hưởng đến luồng chạy của container.
 Tài nguyên hệ thống: Tài nguyên của máy chủ (CPU, RAM, disk space) có thể ảnh hưởng đến hiệu suất của container.
+
+
+Quy trình làm việc với Docker thường được chia thành bốn giai đoạn chính: Xây dựng (Build), Lưu trữ (Ship), Chạy (Run) và Quản lý (Manage). Dưới đây là mô tả chi tiết của từng bước.
+
+1. Giai đoạn Xây dựng (Build)
+Đây là bước đầu tiên và quan trọng nhất, nơi bạn định nghĩa và tạo ra "bản thiết kế" cho ứng dụng của mình dưới dạng một Docker Image.
+
+Viết Dockerfile: Bạn bắt đầu bằng việc tạo một tệp tin văn bản có tên là Dockerfile (không có đuôi tệp). Tệp này chứa các câu lệnh (instruction) để Docker biết cách xây dựng một image.
+
+Ví dụ một Dockerfile đơn giản:
+
+# Sử dụng image cơ bản là Node.js phiên bản 18
+FROM node:18
+
+# Thiết lập thư mục làm việc bên trong container
+WORKDIR /app
+
+# Copy tệp package.json và package-lock.json vào thư mục /app
+COPY package*.json ./
+
+# Cài đặt các dependencies
+RUN npm install
+
+# Copy toàn bộ code ứng dụng vào thư mục /app
+COPY . .
+
+# Mở cổng 3000
+EXPOSE 3000
+
+# Định nghĩa lệnh mặc định để chạy ứng dụng
+CMD ["npm", "start"]
+
+Xây dựng Docker Image: Sau khi có Dockerfile, bạn sử dụng lệnh docker build để xây dựng image.
+
+docker build -t my-web-app:1.0 .
+
+docker build: Lệnh để xây dựng image.
+
+-t my-web-app:1.0: Gắn thẻ (tag) cho image với tên my-web-app và phiên bản 1.0.
+
+.: Chỉ ra rằng Dockerfile nằm trong thư mục hiện tại.
+
+2. Giai đoạn Lưu trữ (Ship)
+Sau khi đã xây dựng thành công một Docker Image, bạn cần lưu trữ nó để có thể chia sẻ và triển khai trên các máy chủ khác.
+
+Đăng nhập vào Registry: Bạn cần đăng nhập vào một kho lưu trữ image (Docker Registry) như Docker Hub hoặc một registry riêng của công ty.
+
+docker login
+
+Đẩy Image lên Registry: Bạn sử dụng lệnh docker push để đẩy image đã được gắn thẻ lên registry.
+
+docker push my-username/my-web-app:1.0
+
+my-username/my-web-app:1.0: Đây là tên image với tên người dùng/tên tổ chức. Điều này giúp phân biệt image của bạn với các image khác.
+
+3. Giai đoạn Chạy (Run)
+Đây là lúc bạn khởi chạy ứng dụng của mình từ Docker Image.
+
+Kéo Image (nếu chưa có): Nếu máy chủ triển khai chưa có image, bạn cần kéo nó về bằng lệnh docker pull.
+
+docker pull my-username/my-web-app:1.0
+
+Chạy Docker Container: Sử dụng lệnh docker run để tạo và khởi chạy một container từ image.
+
+docker run -d -p 80:3000 --name my-app-container my-username/my-web-app:1.0
+
+docker run: Lệnh để chạy container.
+
+-d: Chạy container ở chế độ nền (detached).
+
+-p 80:3000: Ánh xạ cổng. Cổng 80 của máy chủ sẽ được ánh xạ tới cổng 3000 bên trong container.
+
+--name my-app-container: Đặt tên cho container để dễ quản lý.
+
+4. Giai đoạn Quản lý (Manage)
+Sau khi ứng dụng đã chạy, bạn cần có các công cụ để quản lý các container đang hoạt động.
+
+Xem các container đang chạy:
+
+docker ps
+
+Dừng một container:
+
+docker stop my-app-container
+
+Khởi động lại một container:
+
+docker start my-app-container
+
+Xóa một container:
+
+docker rm my-app-container
+
+Xem logs của container:
+
+docker logs -f my-app-container
+
+Tổng kết Workflow
+Quy trình này tạo nên một vòng lặp liên tục và hiệu quả:
+
+Developer: Viết code, tạo Dockerfile, xây dựng image.
+
+Shared Registry: Đẩy image lên Docker Hub hoặc một registry riêng.
+
+Server (Staging/Production): Kéo image từ registry và chạy container.
+
+Workflow này cho phép các nhà phát triển và đội ngũ vận hành làm việc độc lập mà vẫn đảm bảo tính nhất quán của môi trường ứng dụng, giúp việc triển khai trở nên nhanh chóng và đáng tin cậy hơn.
+
 
 * install docker on amazon linux
 yum install -y docker
