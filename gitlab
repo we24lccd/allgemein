@@ -82,3 +82,90 @@ git push origin HEAD:master
 git branch -D tmp
 
 - tạo và checkout branch mới: git checkout -b "tên branch"
+
+Quy trình làm việc với Git (Git Workflow)
+Git workflow là một tập hợp các quy tắc và quy trình mà một đội nhóm tuân theo khi làm việc với Git để quản lý mã nguồn. Một workflow hiệu quả giúp duy trì sự nhất quán, tránh xung đột mã và tối ưu hóa việc cộng tác.
+
+1. Các thành phần cốt lõi của Git Workflow
+Để hiểu về quy trình làm việc, trước hết cần nắm rõ 4 trạng thái của tệp tin trong Git:
+
+Working Directory (Vùng làm việc): Đây là nơi bạn chỉnh sửa, thêm, xóa các tệp tin. Các thay đổi ở đây chưa được Git theo dõi.
+
+Staging Area (Vùng dàn dựng): Là nơi bạn "dàn dựng" các thay đổi đã chọn để chuẩn bị cho một commit. Lệnh git add sẽ đưa các thay đổi từ Working Directory vào Staging Area.
+
+Local Repository (Kho lưu trữ cục bộ): Là cơ sở dữ liệu của Git trên máy tính của bạn, nơi lưu trữ tất cả các commit. Lệnh git commit sẽ tạo một "bức ảnh chụp nhanh" (snapshot) của Staging Area và lưu vào Local Repository.
+
+Remote Repository (Kho lưu trữ từ xa): Là một kho lưu trữ được chia sẻ trên mạng (ví dụ: GitHub, GitLab, Bitbucket), nơi cả đội có thể truy cập. Lệnh git push sẽ gửi các commit từ Local Repository lên Remote Repository.
+
+2. Quy trình làm việc cơ bản (The Basic Git Workflow)
+Đây là quy trình làm việc từng bước mà bạn thực hiện hàng ngày để lưu lại các thay đổi của mình.
+
+Chỉnh sửa tệp tin: Bạn thực hiện các thay đổi cần thiết trong Working Directory.
+
+Đưa các thay đổi vào Staging Area: Bạn sử dụng lệnh git add để chọn những thay đổi mà bạn muốn đưa vào commit tiếp theo.
+
+# Đưa một tệp cụ thể vào Staging Area
+git add file.txt
+
+# Đưa tất cả các thay đổi vào Staging Area
+git add .
+
+Thực hiện Commit: Bạn tạo một commit với một thông điệp ý nghĩa, lưu lại một "bức ảnh chụp nhanh" của Staging Area vào Local Repository.
+
+git commit -m "Thêm tính năng đăng nhập bằng email"
+
+Đẩy Commit lên Remote Repository: Bạn gửi các commit từ Local Repository lên Remote Repository để chia sẻ với cả đội.
+
+# Đẩy commit lên branch hiện tại trên remote
+git push origin main
+
+Cập nhật từ Remote Repository: Để đảm bảo code của bạn luôn được đồng bộ với các thành viên khác, bạn cần thường xuyên kéo các thay đổi mới nhất về.
+
+# Kéo các thay đổi mới nhất từ remote
+git pull origin main
+
+3. Các mô hình Git Workflow phổ biến
+Các mô hình này được xây dựng dựa trên quy trình cơ bản, nhưng bổ sung thêm các quy tắc về cách sử dụng nhánh (branching) để quản lý mã nguồn một cách có tổ chức hơn.
+
+a. GitFlow Workflow
+GitFlow là một mô hình phức tạp và có cấu trúc chặt chẽ, rất phù hợp cho các dự án lớn có nhiều phiên bản (releases) và hỗ trợ dài hạn.
+
+Các nhánh chính:
+
+main (hoặc master): Chứa mã nguồn ổn định, đã được triển khai (deployed).
+
+develop: Chứa mã nguồn mới nhất cho phiên bản tiếp theo.
+
+Các nhánh hỗ trợ:
+
+feature/: Nhánh được tạo từ develop để phát triển một tính năng mới. Sau khi hoàn thành, nó sẽ được gộp (merge) lại vào develop.
+
+release/: Nhánh được tạo từ develop để chuẩn bị cho một phiên bản mới. Tại đây, bạn chỉ thực hiện sửa lỗi nhỏ (bug fixes). Sau đó, nó được gộp vào cả main và develop.
+
+hotfix/: Nhánh được tạo từ main để sửa lỗi khẩn cấp trên bản sản phẩm. Sau khi sửa xong, nó được gộp vào cả main và develop.
+
+b. GitHub Flow
+GitHub Flow là một mô hình đơn giản hơn nhiều so với GitFlow, tập trung vào việc triển khai liên tục (Continuous Deployment).
+
+Các nguyên tắc chính:
+
+Luôn có một nhánh chính duy nhất: main. Nhánh này phải luôn sẵn sàng để triển khai.
+
+Mọi tính năng mới, sửa lỗi đều được phát triển trên các nhánh riêng biệt, được tạo từ main.
+
+Đặt tên nhánh miêu tả tính năng (ví dụ: add-user-authentication).
+
+Sử dụng Pull Request (PR) để thảo luận và xem xét mã trước khi gộp vào main.
+
+Sau khi PR được chấp thuận và gộp vào main, nó sẽ được triển khai ngay lập tức.
+
+c. GitLab Flow
+GitLab Flow là một mô hình nằm giữa GitFlow và GitHub Flow. Nó kết hợp sự đơn giản của GitHub Flow với các nhánh chuyên dụng cho môi trường (staging, production).
+
+Các nguyên tắc chính:
+
+Có một nhánh chính (main) giống như GitHub Flow.
+
+Sử dụng các nhánh tính năng (feature/) để phát triển, sau đó gộp vào main.
+
+Có thể có các nhánh chuyên biệt cho môi trường, ví dụ: staging, production, để quản lý việc triển khai. Mã được gộp từ main vào staging, rồi từ staging vào production.
