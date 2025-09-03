@@ -10,3 +10,9 @@ sc.exe delete "TÊN_SERVICE"
 Restart-Service CheckMultiServices
 Stop-Service CheckMultiServices
 Start-Service CheckMultiServices
+
+
+apache24:
+httpd -k start
+httpd -k stop
+httpd -k restart
