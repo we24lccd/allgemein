@@ -16,3 +16,6 @@ apache24:
 httpd -k start
 httpd -k stop
 httpd -k restart
+
+Đếm số lần xuất hiện của ký tự "abc" theo từng file:
+Get-ChildItem -Recurse | Select-String "java.lang.reflect.UndeclaredThrowableException" | Group-Object Path | Select-Object Name, Count
