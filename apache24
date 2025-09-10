@@ -1,1 +1,69 @@
+3. Tạo chứng chỉ SSL bằng OpenSSL
+3.1. Sinh private key
+cd C:\OpenSSL-Win64\bin
 
+openssl genpkey -algorithm RSA -out C:\Apache24\conf\ssl\server.key -pkeyopt rsa_keygen_bits:2048
+
+3.2. Tạo CSR
+openssl req -new -key C:\Apache24\conf\ssl\server.key -out C:\Apache24\conf\ssl\server.csr
+
+
+👉 Nhập thông tin, chú ý:
+
+Common Name (CN) = hostname hoặc IP server (vd: lab.local hay 192.168.1.100).
+
+3.3. Tạo Self-signed Certificate
+openssl x509 -req -days 365 -in C:\Apache24\conf\ssl\server.csr -signkey C:\Apache24\conf\ssl\server.key -out C:\Apache24\conf\ssl\server.crt
+
+
+👉 Giờ bạn có:
+
+server.key
+
+server.crt
+
+4. Cấu hình Apache với SSL
+4.1. Mở file cấu hình
+
+Mở C:\Apache24\conf\httpd.conf bằng Notepad.
+
+Bỏ comment 2 dòng sau (xóa dấu #):
+
+LoadModule ssl_module modules/mod_ssl.so
+Include conf/extra/httpd-ssl.conf
+
+4.2. Sửa file SSL config
+
+Mở C:\Apache24\conf\extra\httpd-ssl.conf.
+Tìm và sửa các dòng sau:
+
+<VirtualHost _default_:443>
+    DocumentRoot "C:/Apache24/htdocs"
+    ServerName lab.local:443
+
+    SSLEngine on
+    SSLCertificateFile "C:/Apache24/conf/ssl/server.crt"
+    SSLCertificateKeyFile "C:/Apache24/conf/ssl/server.key"
+</VirtualHost>
+
+👉 Lưu ý: Windows dùng / thay cho \ trong đường dẫn.
+
+5. Khởi động Apache
+Trong cmd (Administrator):
+
+cd C:\Apache24\bin
+httpd -k install
+httpd -k start
+
+Nếu muốn restart:
+httpd -k restart
+
+6. Kiểm tra kết quả
+
+Mở trình duyệt trên server hoặc client:
+https://lab.local/
+hoặc
+https://<IP-server>/
+
+
+👉 Trình duyệt sẽ báo certificate not trusted (vì self-signed). Bỏ qua là vào được.
