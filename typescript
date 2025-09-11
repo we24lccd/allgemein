@@ -12,10 +12,12 @@ Cấu hình AWS CLI bằng lệnh: aws configure
 AWS CDK CLI:
 Cài đặt AWS CDK CLI bằng lệnh: npm install -g aws-cdk
 Kiểm tra cài đặt bằng lệnh: cdk --version
+
 2. Khởi tạo dự án CDK:
 
 Tạo một thư mục cho dự án của bạn và chạy lệnh: cdk init app --language typescript
 Lệnh này sẽ tạo một dự án CDK TypeScript mẫu.
+
 3. Hiểu cấu trúc dự án:
 
 bin/: Chứa điểm vào của ứng dụng CDK.
@@ -24,6 +26,7 @@ test/: Chứa các bài kiểm tra cho ứng dụng CDK.
 cdk.json: Chứa các cài đặt cấu hình cho CDK.
 package.json: Chứa các thông tin về gói npm và các dependencies.
 tsconfig.json: Chứa các cài đặt cấu hình cho trình biên dịch TypeScript.
+
 4. Viết stack CDK:
 
 Mở tệp lib/your-stack.ts và bắt đầu định nghĩa cơ sở hạ tầng.
@@ -47,19 +50,23 @@ Trong ví dụ này:
 Nhập các thư viện aws-cdk-lib và aws-cdk-lib/aws-s3.
 Tạo lớp YourStack kế thừa từ cdk.Stack.
 Trong hàm tạo, tạo S3 bucket bằng new s3.Bucket.
+
 5. Triển khai stack:
 
 Chạy lệnh: cdk deploy
 CDK sẽ hiển thị bản xem trước và yêu cầu xác nhận.
+
 6. Các khái niệm CDK quan trọng:
 
 Stacks: Đơn vị triển khai cơ bản.
 Constructs: Các thành phần xây dựng cơ sở hạ tầng.
 Props: Các thuộc tính cấu hình cho constructs.
+
 7. Các thư viện CDK:
 
 aws-cdk-lib: Chứa constructs cho các dịch vụ AWS.
 constructs: Chứa constructs cơ bản.
+
 8. Các bước tiếp theo:
 
 Khám phá các thư viện CDK và tìm hiểu các constructs.
