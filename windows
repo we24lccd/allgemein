@@ -36,3 +36,82 @@ nssm set FlaskService AppStderr C:\services\flask_app\logs\stderr.log
 
 # Start service
 nssm start FlaskService
+
+
+Các lệnh sc cơ bản trên PowerShell
+Lệnh sc (Service Control) là một công cụ mạnh mẽ trong Windows để tương tác với các dịch vụ hệ thống. Dưới đây là những lệnh cơ bản và phổ biến nhất, cùng với ví dụ cụ thể.
+
+1. Xem trạng thái dịch vụ
+Lệnh này giúp kiểm tra trạng thái hiện tại của một dịch vụ.
+
+Cú pháp: sc qc <Tên_dịch_vụ>
+
+Ví dụ: Xem trạng thái của dịch vụ Windows Update.
+
+sc qc wuauserv
+
+2. Dừng dịch vụ
+Dùng lệnh này để dừng một dịch vụ đang chạy.
+
+Cú pháp: sc stop <Tên_dịch_vụ>
+
+Ví dụ: Dừng dịch vụ Windows Update.
+
+sc stop wuauserv
+
+3. Khởi động dịch vụ
+Lệnh này được sử dụng để khởi động một dịch vụ đã bị dừng.
+
+Cú pháp: sc start <Tên_dịch_vụ>
+
+Ví dụ: Khởi động lại dịch vụ Windows Update.
+
+sc start wuauserv
+
+4. Xóa dịch vụ
+Lệnh này sẽ xóa vĩnh viễn một dịch vụ khỏi hệ thống. Hãy cẩn thận khi sử dụng lệnh này.
+
+Cú pháp: sc delete <Tên_dịch_vụ>
+
+Ví dụ: Xóa một dịch vụ có tên "MyCustomService".
+
+sc delete MyCustomService
+
+5. Tạo một dịch vụ mới
+Bạn có thể tạo một dịch vụ mới để chạy một chương trình hoặc script.
+
+Cú pháp: sc create <Tên_dịch_vụ> binPath= "<Đường_dẫn_đến_chương_trình>" displayname= "<Tên_hiển_thị>"
+
+Ví dụ: Tạo một dịch vụ mới cho Notepad.
+
+sc create "NotepadService" binPath= "C:\Windows\System32\notepad.exe" displayname= "Dịch vụ Notepad"
+
+6. Thay đổi loại khởi động dịch vụ
+Lệnh này cho phép bạn thay đổi cách một dịch vụ khởi động (tự động, thủ công, hoặc bị vô hiệu hóa).
+
+Các tùy chọn:
+
+auto: Tự động khởi động khi máy tính bật.
+
+demand: Khởi động thủ công.
+
+disabled: Bị vô hiệu hóa, không thể khởi động.
+
+delayed-auto: Tự động khởi động, nhưng bị hoãn lại một chút để không làm chậm quá trình khởi động hệ thống.
+
+Cú pháp: sc config <Tên_dịch_vụ> start= <tùy_chọn_khởi_động>
+
+Ví dụ: Thiết lập dịch vụ Windows Update để khởi động thủ công.
+
+sc config wuauserv start= demand
+
+7. Lấy danh sách dịch vụ
+Bạn có thể sử dụng lệnh này để liệt kê tất cả các dịch vụ trên hệ thống.
+
+Cú pháp: sc query
+
+Ví dụ: Lọc danh sách để chỉ hiển thị các dịch vụ đang chạy.
+
+sc query state= all | findstr "RUNNING"
+
+Những lệnh trên sẽ giúp bạn quản lý các dịch vụ trên máy tính một cách hiệu quả hơn. Bạn có muốn tìm hiểu thêm về các lệnh khác hoặc một khía cạnh cụ thể nào của sc không?
