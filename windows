@@ -12,7 +12,7 @@ Stop-Service CheckMultiServices
 Start-Service CheckMultiServices
 
 
-apache24:
+- apache24:
 httpd -k start
 httpd -k stop
 httpd -k restart
@@ -20,7 +20,7 @@ httpd -k restart
 Đếm số lần xuất hiện của ký tự "abc" theo từng file:
 Get-ChildItem -Recurse | Select-String "java.lang.reflect.UndeclaredThrowableException" | Group-Object Path | Select-Object Name, Count
 
-Đăng ký Flask service
+- Đăng ký Flask service
 # Tạo service "FlaskService"
 nssm install FlaskService "C:\services\flask_app\venv\Scripts\python.exe" "C:\services\flask_app\run.py"
 
@@ -38,7 +38,7 @@ nssm set FlaskService AppStderr C:\services\flask_app\logs\stderr.log
 nssm start FlaskService
 
 
-Các lệnh sc cơ bản trên PowerShell
+- Các lệnh sc cơ bản trên PowerShell
 Lệnh sc (Service Control) là một công cụ mạnh mẽ trong Windows để tương tác với các dịch vụ hệ thống. Dưới đây là những lệnh cơ bản và phổ biến nhất, cùng với ví dụ cụ thể.
 
 1. Xem trạng thái dịch vụ
