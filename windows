@@ -19,3 +19,20 @@ httpd -k restart
 
 Đếm số lần xuất hiện của ký tự "abc" theo từng file:
 Get-ChildItem -Recurse | Select-String "java.lang.reflect.UndeclaredThrowableException" | Group-Object Path | Select-Object Name, Count
+
+Đăng ký Flask service
+# Tạo service "FlaskService"
+nssm install FlaskService "C:\services\flask_app\venv\Scripts\python.exe" "C:\services\flask_app\run.py"
+
+# Đặt Working Directory
+nssm set FlaskService AppDirectory C:\services\flask_app
+
+# Tạo folder logs
+mkdir C:\services\flask_app\logs
+
+# Redirect log ra file
+nssm set FlaskService AppStdout C:\services\flask_app\logs\stdout.log
+nssm set FlaskService AppStderr C:\services\flask_app\logs\stderr.log
+
+# Start service
+nssm start FlaskService
