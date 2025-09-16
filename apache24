@@ -67,3 +67,125 @@ https://<IP-server>/
 
 
 👉 Trình duyệt sẽ báo certificate not trusted (vì self-signed). Bỏ qua là vào được.
+
+
+- Apache load balancing
+🔹 1. Các phương pháp phân phối (Load Balancing Methods)
+
+Khi khai báo ProxyPass với balancer, bạn có thể chọn thuật toán:
+
+<Proxy "balancer://flaskcluster">
+    BalancerMember http://127.0.0.1:5000
+    BalancerMember http://127.0.0.1:5001
+    ProxySet lbmethod=byrequests
+</Proxy>
+
+Các lbmethod có sẵn:
+
+byrequests (default) → Round-robin, chia đều theo số request.
+
+bytraffic → Chia theo dung lượng băng thông (ai ít data thì nhận thêm).
+
+bybusyness → Chia theo số kết nối đang bận (server nào nhàn thì được nhận).
+
+heartbeat → Phù hợp với cluster có health-check nâng cao.
+
+👉 Bạn có thể đổi cách phân phối ngay trong httpd-balancer.conf.
+
+🔹 2. Gán trọng số (Load Balancing Factor)
+
+Có thể định nghĩa server nào mạnh thì nhận nhiều request hơn:
+
+<Proxy "balancer://flaskcluster">
+    BalancerMember http://127.0.0.1:5000 loadfactor=1
+    BalancerMember http://127.0.0.1:5001 loadfactor=3
+    ProxySet lbmethod=byrequests
+</Proxy>
+
+
+→ Kết quả: port 5001 nhận khoảng 75% request, port 5000 chỉ nhận 25%.
+
+🔹 3. Quản lý qua Balancer Manager
+
+Truy cập:
+👉 http://localhost:8080/balancer-manager
+
+Tại đây bạn có thể:
+
+Disable/Enable một backend tạm thời.
+
+Thay đổi loadfactor (trọng số) ngay tại runtime.
+
+Check trạng thái worker (Init Ok, Error, Busy…).
+
+Nhưng: cấu hình này không được lưu sau khi restart → chỉ runtime.
+
+🔹 4. Health check (kiểm tra backend sống/chết)
+
+Apache có module mod_proxy_hcheck (nếu bật) để tự động check backend.
+Ví dụ cấu hình health check đơn giản:
+
+<Proxy "balancer://flaskcluster">
+    BalancerMember http://127.0.0.1:5000 hcmethod=GET hcuri=/ hcexpr=%{REQUEST_STATUS} == 200
+    BalancerMember http://127.0.0.1:5001 hcmethod=GET hcuri=/ hcexpr=%{REQUEST_STATUS} == 200
+    ProxySet lbmethod=byrequests
+</Proxy>
+
+
+👉 Nếu backend trả lỗi (không phải HTTP 200) thì Apache sẽ tự loại bỏ nó khỏi cluster.
+
+🔹 5. Sticky Session (giữ session về 1 backend)
+
+Dùng khi backend có session theo user (ví dụ login):
+
+<Proxy "balancer://flaskcluster">
+    BalancerMember http://127.0.0.1:5000 route=flask1
+    BalancerMember http://127.0.0.1:5001 route=flask2
+    ProxySet stickysession=JSESSIONID|jsessionid
+</Proxy>
+
+
+👉 Nếu client có cookie JSESSIONID=flask1, request sẽ luôn về backend 5000.
+
+🔹 6. Failover (dự phòng)
+
+Bạn có thể đánh dấu 1 backend là standby, chỉ chạy khi server chính chết:
+
+<Proxy "balancer://flaskcluster">
+    BalancerMember http://127.0.0.1:5000
+    BalancerMember http://127.0.0.1:5001 status=+H
+</Proxy>
+
+
+status=+H → backend ở chế độ Hot Standby.
+→ Bình thường chỉ 5000 nhận request, khi 5000 down thì 5001 mới chạy.
+
+🔹 7. Giới hạn số kết nối / timeout
+
+Bạn có thể cấu hình giới hạn:
+
+<Proxy "balancer://flaskcluster">
+    BalancerMember http://127.0.0.1:5000 max=50 retry=30
+    BalancerMember http://127.0.0.1:5001 max=50 retry=30
+</Proxy>
+
+
+max=50 → tối đa 50 kết nối đồng thời.
+
+retry=30 → sau 30s thử kết nối lại backend nếu nó từng fail.
+
+✅ Tổng kết
+
+Apache load balancer trong httpd.conf có thể:
+
+Chia tải (round robin, traffic, busyness).
+
+Gán trọng số (server mạnh xử lý nhiều hơn).
+
+Failover khi server chính chết.
+
+Sticky session (giữ user trên cùng backend).
+
+Health-check backend.
+
+Quản lý runtime qua /balancer-manager.
