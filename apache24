@@ -7,7 +7,6 @@ openssl genpkey -algorithm RSA -out C:\Apache24\conf\ssl\server.key -pkeyopt rsa
 3.2. Tạo CSR
 openssl req -new -key C:\Apache24\conf\ssl\server.key -out C:\Apache24\conf\ssl\server.csr
 
-
 👉 Nhập thông tin, chú ý:
 
 Common Name (CN) = hostname hoặc IP server (vd: lab.local hay 192.168.1.100).
@@ -15,11 +14,9 @@ Common Name (CN) = hostname hoặc IP server (vd: lab.local hay 192.168.1.100).
 3.3. Tạo Self-signed Certificate
 openssl x509 -req -days 365 -in C:\Apache24\conf\ssl\server.csr -signkey C:\Apache24\conf\ssl\server.key -out C:\Apache24\conf\ssl\server.crt
 
-
-👉 Giờ bạn có:
+👉 Giờ có:
 
 server.key
-
 server.crt
 
 4. Cấu hình Apache với SSL
@@ -65,7 +62,6 @@ https://lab.local/
 hoặc
 https://<IP-server>/
 
-
 👉 Trình duyệt sẽ báo certificate not trusted (vì self-signed). Bỏ qua là vào được.
 
 
@@ -102,7 +98,6 @@ Có thể định nghĩa server nào mạnh thì nhận nhiều request hơn:
     ProxySet lbmethod=byrequests
 </Proxy>
 
-
 → Kết quả: port 5001 nhận khoảng 75% request, port 5000 chỉ nhận 25%.
 
 🔹 3. Quản lý qua Balancer Manager
@@ -110,14 +105,11 @@ Có thể định nghĩa server nào mạnh thì nhận nhiều request hơn:
 Truy cập:
 👉 http://localhost:8080/balancer-manager
 
-Tại đây bạn có thể:
+Tại đây có thể:
 
 Disable/Enable một backend tạm thời.
-
 Thay đổi loadfactor (trọng số) ngay tại runtime.
-
 Check trạng thái worker (Init Ok, Error, Busy…).
-
 Nhưng: cấu hình này không được lưu sau khi restart → chỉ runtime.
 
 🔹 4. Health check (kiểm tra backend sống/chết)
@@ -144,48 +136,38 @@ Dùng khi backend có session theo user (ví dụ login):
     ProxySet stickysession=JSESSIONID|jsessionid
 </Proxy>
 
-
 👉 Nếu client có cookie JSESSIONID=flask1, request sẽ luôn về backend 5000.
 
 🔹 6. Failover (dự phòng)
 
-Bạn có thể đánh dấu 1 backend là standby, chỉ chạy khi server chính chết:
+Có thể đánh dấu 1 backend là standby, chỉ chạy khi server chính chết:
 
 <Proxy "balancer://flaskcluster">
     BalancerMember http://127.0.0.1:5000
     BalancerMember http://127.0.0.1:5001 status=+H
 </Proxy>
 
-
 status=+H → backend ở chế độ Hot Standby.
 → Bình thường chỉ 5000 nhận request, khi 5000 down thì 5001 mới chạy.
 
 🔹 7. Giới hạn số kết nối / timeout
 
-Bạn có thể cấu hình giới hạn:
+Có thể cấu hình giới hạn:
 
 <Proxy "balancer://flaskcluster">
     BalancerMember http://127.0.0.1:5000 max=50 retry=30
     BalancerMember http://127.0.0.1:5001 max=50 retry=30
 </Proxy>
 
-
 max=50 → tối đa 50 kết nối đồng thời.
-
 retry=30 → sau 30s thử kết nối lại backend nếu nó từng fail.
 
 ✅ Tổng kết
 
 Apache load balancer trong httpd.conf có thể:
-
 Chia tải (round robin, traffic, busyness).
-
 Gán trọng số (server mạnh xử lý nhiều hơn).
-
 Failover khi server chính chết.
-
 Sticky session (giữ user trên cùng backend).
-
 Health-check backend.
-
 Quản lý runtime qua /balancer-manager.
