@@ -125,5 +125,38 @@ tasklist /FI "PID eq <PID_number>"
 taskkill /PID <PID_number> /F
 taskkill /IM "<process_name>" /F
 
+- Xem chi tiết lệnh full command line của process:
+wmic process where "name='node.exe'" get ProcessId,CommandLine
 
+hoặc:
 
+Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" | Select-Object ProcessId, CommandLine
+
+- Tìm cha của process (Parent Process ID):
+wmic process where (processid=5720) get ParentProcessId
+
+Sau đó tìm process cha đó:
+
+tasklist /FI "PID eq <ParentPID>"
+→ Cái này sẽ lộ ra process nào đang liên tục spawn node.exe.
+
+Nếu nghi ngờ pm2:
+pm2 list
+Nếu pm2 cài global, nó có thể đang giữ process sống.
+
+Nếu nghi ngờ registry Run (vì nó không hiện trong Task Scheduler):
+reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+
+Liệt kê toàn bộ service chạy bằng nssm.exe
+sc query type= service | findstr /i nssm
+
+hoặc
+tasklist /fi "imagename eq nssm.exe" /svc
+
+Xem service chi tiết để chắc chắn nó gắn với server.js:
+sc qc <ServiceName>
+
+Dừng và xoá service:
+Stop-Service <ServiceName> -Force
+sc delete <ServiceName>
