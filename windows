@@ -114,4 +114,16 @@ Ví dụ: Lọc danh sách để chỉ hiển thị các dịch vụ đang chạ
 
 sc query state= all | findstr "RUNNING"
 
-Những lệnh trên sẽ giúp bạn quản lý các dịch vụ trên máy tính một cách hiệu quả hơn. Bạn có muốn tìm hiểu thêm về các lệnh khác hoặc một khía cạnh cụ thể nào của sc không?
+
+- Tìm tiến trình đang dùng port
+netstat -ano | findstr "8080"
+
+- Tìm tên tiến trình từ PID
+tasklist /FI "PID eq <PID_number>"
+
+- Kết thúc tiến trình
+taskkill /PID <PID_number> /F
+taskkill /IM "<process_name>" /F
+
+
+
