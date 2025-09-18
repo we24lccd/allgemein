@@ -1,0 +1,60 @@
+Cảnh báo qua mail:
+1. Kiến trúc hệ thống cảnh báo
+Hệ thống cảnh báo của Azure Monitor hoạt động theo chu trình:
+Nguồn dữ liệu (Metrics/Logs): Lấy thông số từ Azure Resource (VD: Azure SQL Database CPU, Memory, DTU, Query performance…).
+Alert Rule: Định nghĩa điều kiện (ví dụ: CPU > 75% trong 5 phút).
+Action Group: Định nghĩa nơi gửi cảnh báo (Email, SMS, Teams, Webhook, Logic App…).
+Notification: Người quản trị nhận cảnh báo và xử lý.
+
+2. Các bước cấu hình chi tiết
+Bước 1: Truy cập Azure Monitor
+Vào Azure Portal → tìm Monitor → chọn Alerts.
+Bước 2: Tạo Alert Rule
+Chọn + Create → Alert rule.
+Chọn Resource (ví dụ: SQL Database PROD-DB1).
+Chọn Condition:
+Signal type: Metrics
+Metric: CPU percentage (cpu_percent)
+Aggregation: Maximum
+Operator: Greater Than
+Threshold: 75
+Evaluation granularity: 5 minutes
+Nhấn Done.
+
+Bước 3: Tạo Action Group
+Trong bước tạo Alert rule, chọn Add action group:
+Đặt tên: AG-Prod-DB-Alerts
+Notifications:
+Email: team@company.com
+SMS: số điện thoại quản trị viên
+Webhook: gửi về hệ thống khác (Slack, Teams, Zabbix…)
+Save Action Group.
+
+Bước 4: Liên kết Alert Rule với Action Group
+Trong Alert rule, thêm Action Group vừa tạo.
+Nhấn Review + Create → Create.
+
+3. Cấu hình nâng cao (Best Practices)
+3.1. Giảm cảnh báo giả (false positive)
+Dùng Dynamic Threshold thay vì số cố định (Azure tự tính baseline).
+Dùng Period 10 phút, frequency 5 phút để tránh cảnh báo ngắn hạn.
+
+3.2. Tích hợp Incident Management
+Dùng Webhook để gửi cảnh báo vào:
+Azure Logic Apps (tự động tạo incident ticket trong ServiceNow/Jira).
+Microsoft Teams/Slack để cảnh báo trực tiếp DevOps team.
+
+3.3. Phân loại mức độ cảnh báo
+
+Severity 0 – Critical: Ứng dụng downtime.
+Severity 1 – Error: CPU/RAM vượt mức cao.
+Severity 2 – Warning: CPU 75% (như bạn đang có).
+Severity 3–4 – Informational: Thông tin log, audit.
+
+3.4. Automation Response
+
+Tích hợp Automation Runbook hoặc Azure Functions để tự động:
+Scale up database.
+Kill long-running queries.
+
+Gửi báo cáo về email.
