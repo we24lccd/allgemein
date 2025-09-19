@@ -11,12 +11,6 @@ Restart-Service CheckMultiServices
 Stop-Service CheckMultiServices
 Start-Service CheckMultiServices
 
-
-- apache24:
-httpd -k start
-httpd -k stop
-httpd -k restart
-
 Đếm số lần xuất hiện của ký tự "abc" theo từng file:
 Get-ChildItem -Recurse | Select-String "java.lang.reflect.UndeclaredThrowableException" | Group-Object Path | Select-Object Name, Count
 
@@ -187,3 +181,5 @@ choco install memcached -y
 
 Cài ngrok:
 choco install ngrok -y
+
+- Cài đặt docker trên windows server 2016: https://zingserver.com/cach-cai-dat-docker-tren-windows-server/
