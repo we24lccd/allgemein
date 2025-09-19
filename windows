@@ -160,3 +160,30 @@ sc qc <ServiceName>
 Dừng và xoá service:
 Stop-Service <ServiceName> -Force
 sc delete <ServiceName>
+
+- Cài đặt Chocolatey
+Mở PowerShell với quyền Administrator
+(Run as Administrator).
+
+Chạy lệnh cài đặt
+Copy/paste nguyên lệnh này vào PowerShell:
+
+Set-ExecutionPolicy Bypass -Scope Process -Force; `
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
+iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+Xác minh cài đặt
+Sau khi chạy xong, đóng PowerShell rồi mở lại → kiểm tra:
+choco --version
+
+👉 Nếu thấy hiện version (ví dụ 2.3.0), nghĩa là OK ✅
+📦 Ví dụ dùng choco
+
+Cài Redis:
+choco install redis-64 -y
+
+Cài Memcached:
+choco install memcached -y
+
+Cài ngrok:
+choco install ngrok -y
