@@ -171,3 +171,34 @@ Failover khi server chính chết.
 Sticky session (giữ user trên cùng backend).
 Health-check backend.
 Quản lý runtime qua /balancer-manager.
+
+
+🔹 Bước 1: Stop và disable Apache24 standalone
+
+Apache24 hiện chạy ở C:\Apache24 → stop service này để nó không tranh cổng.
+
+Mở PowerShell (Admin):
+
+# Tìm xem có service Apache24 không
+Get-Service *Apache*
+
+# Stop service Apache24 nếu đang chạy
+Stop-Service Apache2.4 -Force
+
+# Disable để không tự khởi động lại
+Set-Service Apache2.4 -StartupType Disabled
+
+
+👉 Sau bước này, Apache standalone sẽ không chiếm port nữa.
+
+🔹 Bước 2: Tắt IIS (World Wide Web Publishing Service)
+
+IIS cũng thường chiếm port 80.
+
+Stop-Service W3SVC -Force
+Set-Service W3SVC -StartupType Disabled
+Stop-Service WAS -Force
+Set-Service WAS -StartupType Disabled
+
+
+👉 Port 80 sẽ được giải phóng hoàn toàn cho XAMPP.
