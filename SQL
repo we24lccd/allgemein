@@ -184,3 +184,59 @@ mysql -h <endpoint> -P <port> -u <username> -p
 
 - Cài đặt postgresql trên ec2
 https://hbayraktar.medium.com/how-to-install-postgresql-15-on-amazon-linux-2023-a-step-by-step-guide-57eebb7ad9fc
+
+- Giám sát số lượng connection thực sự trong DB:
+SELECT DB_NAME(dbid) as DBName, COUNT(dbid) as NumberOfConnections
+FROM sys.sysprocesses
+WHERE dbid > 0
+GROUP BY dbid;
+
+- Liệt kê chi tiết kết nối theo người dùng + host:
+SELECT 
+    DB_NAME(sp.dbid) AS DBName,
+    sp.loginame AS LoginName,
+    sp.hostname AS HostName,
+    sp.program_name AS ProgramName,
+    COUNT(*) AS NumberOfConnections
+FROM sys.sysprocesses sp
+WHERE sp.dbid > 0
+GROUP BY DB_NAME(sp.dbid), sp.loginame, sp.hostname, sp.program_name
+ORDER BY NumberOfConnections DESC;
+
+- Xem connection nào đang chạy query gì:
+SELECT 
+    r.session_id,
+    r.status,
+    r.wait_type,
+    r.cpu_time,
+    r.total_elapsed_time,
+    DB_NAME(r.database_id) AS DBName,
+    t.text AS QueryText
+FROM sys.dm_exec_requests r
+CROSS APPLY sys.dm_exec_sql_text(r.sql_handle) t
+WHERE r.database_id > 0;
+
+- Xem session nào idle lâu mà chưa bị đóng:
+SELECT 
+    s.session_id,
+    s.login_name,
+    s.host_name,
+    s.program_name,
+    s.status,
+    c.connect_time,
+    c.last_read,
+    c.last_write
+FROM sys.dm_exec_sessions s
+JOIN sys.dm_exec_connections c 
+    ON s.session_id = c.session_id
+WHERE s.is_user_process = 1;
+
+- Theo dõi connection pool sử dụng thực tế:
+SELECT 
+    DB_NAME(dbid) AS DBName,
+    loginame,
+    COUNT(*) AS NumberOfConnections
+FROM sys.sysprocesses
+WHERE dbid > 0
+GROUP BY DB_NAME(dbid), loginame
+ORDER BY NumberOfConnections DESC;
