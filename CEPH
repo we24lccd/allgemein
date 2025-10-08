@@ -1,0 +1,115 @@
+TÀI LIỆU CƠ BẢN VỀ CEPH (VERSION: MIMIC/NAUTILUS+)
+Ceph là một nền tảng lưu trữ phần mềm định nghĩa (Software-Defined Storage - SDS) phân tán, hướng đối tượng và có khả năng mở rộng cao.
+
+MODULE 1: KIẾN TRÚC CỐT LÕI
+1.1. Các Thành phần Cơ bản (Daemons)
+
+Monitor (MON)
+Duy trì trạng thái cụm (Cluster Map), quản lý sự đồng thuận (Quorum).
+Cần số lẻ (3 hoặc 5) để duy trì Quorum.
+
+Manager (MGR)
+Thu thập số liệu thống kê, cung cấp API và giao diện Web (Dashboard).
+Tối thiểu 1 MGR.
+
+OSD
+Lưu trữ dữ liệu thực tế trên ổ đĩa vật lý, thực hiện sao chép (replication) và phục hồi (recovery).
+Càng nhiều càng tốt (Scale-out).
+
+RGW (Gateway)
+Cung cấp giao diện HTTP cho Object Storage (tương thích S3/Swift).
+Tùy chọn, cần thiết cho Object Storage.
+
+1.2. Các Khái niệm Cơ bản
+RADOS
+(Reliable Autonomic Distributed Object Store) Lớp lưu trữ nền tảng, quản lý tất cả các OSD.
+Nền tảng, không có lệnh trực tiếp.
+
+CRUSH
+(Controlled Replication Under Scalable Hashing) Thuật toán định vị và phân bổ dữ liệu.
+ceph osd tree, ceph osd getcrushmap
+
+Pool
+Tập hợp logic của các đối tượng (Objects) và các Quy tắc CRUSH.
+ceph osd pool create
+
+PGs
+(Placement Groups) Đơn vị cơ bản để phân bổ và phục hồi dữ liệu trong một Pool.
+ceph pg dump, ceph health
+
+MODULE 2: THỰC HÀNH TRIỂN KHAI VÀ QUẢN LÝ CỤM (Dùng cephadm)
+Các lệnh sau được thực hiện trên Node quản lý (Admin Node).
+
+2.1. Kiểm tra Trạng thái Cụm
+
+ceph status: Xem trạng thái tổng thể của cụm Ceph (Health, Monitors, OSDs, Pools, I/O).
+health: OK
+
+ceph health detail: Xem chi tiết các cảnh báo hoặc lỗi.
+health: HEALTH_OK
+
+ceph -s: Lệnh viết tắt của ceph status.
+
+2.2. Quản lý OSD (Thành phần Quan trọng nhất)
+
+ceph osd tree: Hiển thị cấu trúc CRUSH hiện tại, trạng thái (up/down) và vị trí (in/out) của tất cả OSD.
+
+ceph osd create: Tạo OSD mới (thường dùng tự động hóa qua cephadm).
+
+ceph osd down [id]: Đánh dấu OSD là down (dừng hoạt động).
+
+ceph osd out [id]: Đánh dấu OSD là out (tạm thời ngắt kết nối để bảo trì).
+
+2.3. Quản lý Pool và PG
+
+ceph osd pool create [poolname] [pg_num]
+Tạo một Pool mới (Ví dụ: ceph osd pool create data 128).
+
+ceph osd pool set [poolname] size [num]
+Đặt số lượng bản sao (Replicas) cho Pool (Ví dụ: ceph osd pool set data size 3).
+
+ceph osd pool set [poolname] min_size [num]
+Số bản sao tối thiểu để cho phép I/O (Mặc định: size - 1).
+
+ceph osd pool delete [poolname] [poolname] --yes-i-really-really-mean-it
+Xóa một Pool.
+
+MODULE 3: LƯU TRỮ KHỐI (RBD - Rados Block Device)
+RBD cung cấp ổ đĩa ảo cho các máy ảo hoặc container.
+
+3.1. Tạo và Quản lý RBD
+
+rbd create [poolname]/[imagename] --size [M/G/T]
+Tạo một image RBD (Ví dụ: rbd create vms/vm1 --size 10G).
+
+rbd ls [poolname]
+Liệt kê tất cả các Image RBD trong Pool.
+
+rbd map [poolname]/[imagename]
+Gắn Image RBD lên một máy chủ Client.
+
+rbd unmap /dev/rbd/[poolname]/[imagename]
+Gỡ Image RBD khỏi máy chủ Client.
+
+rbd snap create [poolname]/[imagename]@[snapname]
+Tạo Snapshot (ảnh chụp nhanh) của Image.
+
+MODULE 4: LƯU TRỮ ĐỐI TƯỢNG (RGW - Rados Gateway)
+RGW cung cấp giao diện tương thích S3/Swift.
+
+4.1. Quản lý Người dùng và Buckets
+Cần có RGW hoạt động trên cụm.
+
+radosgw-admin user create --uid=[uid] --display-name="[name]"
+Tạo người dùng RGW mới (tương tự như tài khoản AWS IAM).
+
+radosgw-admin bucket list --uid=[uid]
+Liệt kê các Buckets của người dùng.
+
+radosgw-admin user info --uid=[uid]
+Xem thông tin chi tiết (bao gồm Access Key và Secret Key).
+
+MẸO VÀ CẢNH BÁO
+QUAN TRỌNG VỀ PG: Số lượng PGs (pg_num) rất quan trọng đối với hiệu suất. Công thức khuyến nghị: Tổng số PG = (Tổng số OSD * 100) / Số bản sao. Kết quả phải được làm tròn lên lũy thừa gần nhất của 2.
+KHÔNG BAO GIỜ sử dụng ceph osd destroy trên OSD đang hoạt động trừ khi bạn biết chính xác mình đang làm gì.
+LUÔN LUÔN kiểm tra trạng thái cụm bằng ceph status sau bất kỳ thay đổi cấu hình nào.
