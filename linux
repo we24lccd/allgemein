@@ -557,3 +557,143 @@ sudo docker system prune -a
 
 sudo dnf remove snapd -y
 sudo rm -rf ~/snap /snap /var/snap /var/lib/snapd
+
+🧩 Cách Nâng Cấp Database Trên Linux
+🟢 1️⃣ Các nguyên tắc chung trước khi nâng cấp
+
+Dù là MySQL, PostgreSQL, MariaDB, hay MongoDB — bạn luôn tuân thủ 5 bước chuẩn sau:
+
+✅ Bước 1: Kiểm tra phiên bản hiện tại
+mysql -V
+# hoặc
+psql --version
+# hoặc
+mongo --version
+
+✅ Bước 2: Sao lưu toàn bộ dữ liệu
+
+Không bao giờ nâng cấp DB mà chưa có bản backup!
+
+Ví dụ backup MySQL:
+
+mysqldump -u root -p --all-databases > backup_$(date +%F).sql
+
+
+Backup PostgreSQL:
+
+pg_dumpall -U postgres > backup_pg_$(date +%F).sql
+
+
+Backup MongoDB:
+
+mongodump --out /backup/mongo_$(date +%F)
+
+✅ Bước 3: Kiểm tra tương thích (compatibility)
+
+Đọc release notes của phiên bản mới.
+
+Kiểm tra thay đổi về:
+
+Cú pháp SQL / lệnh bị deprecated
+
+Cấu trúc dữ liệu system table
+
+Plugin, authentication method
+
+Ví dụ:
+MySQL 5.7 → 8.0 thay đổi default_authentication_plugin thành caching_sha2_password.
+
+✅ Bước 4: Thử nâng cấp trên môi trường test
+
+Dựng server clone hoặc container test.
+
+Restore dữ liệu backup → kiểm tra truy vấn, ứng dụng.
+
+Chạy các công cụ kiểm tra chính thức:
+
+mysqlcheck -u root -p --all-databases
+pg_upgrade --check
+
+✅ Bước 5: Nâng cấp thực tế
+
+Tùy distro (Ubuntu / CentOS / Amazon Linux) và loại DB, lệnh sẽ khác nhau.
+
+🔵 2️⃣ Nâng cấp MySQL / MariaDB
+🔹 Cách 1: Upgrade bằng package manager
+🧰 Ubuntu/Debian:
+sudo apt update
+sudo apt install mysql-server
+
+
+Sau khi cài, chạy script nâng cấp dữ liệu:
+
+sudo mysql_upgrade -u root -p
+sudo systemctl restart mysql
+
+🧰 CentOS / RHEL:
+sudo yum update mysql-server
+sudo systemctl restart mysqld
+
+🔹 Cách 2: Upgrade thủ công (nếu major version thay đổi)
+
+Stop service:
+
+sudo systemctl stop mysqld
+
+
+Backup /var/lib/mysql
+
+Gỡ bản cũ:
+
+sudo yum remove mysql-server
+
+
+Cài bản mới (từ repo chính thức):
+
+sudo rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-7.noarch.rpm
+sudo yum install mysql-server
+
+
+Khởi động lại:
+
+sudo systemctl start mysqld
+sudo mysql_upgrade
+
+🟠 3️⃣ Nâng cấp PostgreSQL
+🔹 Kiểm tra phiên bản:
+psql --version
+
+🔹 Backup và stop service:
+sudo systemctl stop postgresql
+pg_dumpall -U postgres > backup_pg.sql
+
+🔹 Cài bản mới song song (không ghi đè):
+sudo apt install postgresql-15
+
+🔹 Sử dụng công cụ pg_upgrade:
+sudo -u postgres pg_upgrade \
+  -b /usr/lib/postgresql/14/bin \
+  -B /usr/lib/postgresql/15/bin \
+  -d /var/lib/postgresql/14/main \
+  -D /var/lib/postgresql/15/main
+
+🔹 Cập nhật cấu hình & khởi động lại:
+sudo systemctl start postgresql
+
+🟣 4️⃣ Nâng cấp MongoDB
+
+Stop service:
+sudo systemctl stop mongod
+
+Backup:
+mongodump --out /backup/mongo_$(date +%F)
+
+Update repo và gói:
+sudo apt update
+sudo apt install -y mongodb-org
+
+Start lại:
+sudo systemctl start mongod
+
+Xác minh:
+mongo --eval "db.version()"
