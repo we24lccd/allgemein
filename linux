@@ -63,9 +63,9 @@ $dir
 $path
 echo -e :tùy chọn -e cho phép chèn các ký tự, như \n cho dòng mới hoặc \t cho các tab.
 
-Bạn hãy thử tự comment dòng local foo lại và check xem điều gì sẽ xảy ra nhé.
+Tự comment dòng local foo lại và check xem điều gì sẽ xảy ra.
 
-Nếu như trong script bạn sử dụng tới một biến mà ở các lệnh trước chưa khai báo biến đó, hoặc biến đó chưa có giá trị, bạn có thể sử dụng một vài cú pháp sau được gọi là variable expansion:
+Nếu như trong script sử dụng tới một biến mà ở các lệnh trước chưa khai báo biến đó, hoặc biến đó chưa có giá trị, bạn có thể sử dụng một vài cú pháp sau được gọi là variable expansion:
 
 #{foo:-"Default value"} : nếu foo không tồn tại hoặc không chứa giá trị, nó sẽ sử dụng giá trị khai báo sau :-.
 ➜  /tmp foo= 
@@ -197,7 +197,6 @@ Cách sử dụng:
 
 w
 
-
 Kết quả: Lệnh này sẽ hiển thị một bảng thông tin, bao gồm tên người dùng, terminal, thời gian đăng nhập, thời gian không hoạt động và lệnh đang chạy. Bạn có thể đếm số dòng trong phần này để biết số lượng phiên SSH.
 2. Lệnh who:
 Công dụng: Hiển thị danh sách các người dùng đang đăng nhập vào hệ thống.
@@ -212,7 +211,6 @@ Công dụng: Liệt kê tất cả các tiến trình đang chạy và lọc ra
 Cách sử dụng:
 
 ps aux | grep sshd
-
 
 Kết quả: Lệnh này sẽ hiển thị danh sách các tiến trình có chứa từ khóa "sshd". Mỗi dòng đại diện cho một phiên SSH.
 4. Lệnh netstat -antp | grep :22:
@@ -299,9 +297,9 @@ Tìm kiếm:
 	/pattern: Tìm kiếm từ đầu đến cuối tệp.
 	?pattern: Tìm kiếm từ cuối lên đầu tệp.
 Ví dụ
-	Để chèn một dòng mới ở trên dòng hiện tại, bạn nhấn O.
-	Để xóa từ dưới con trỏ, bạn nhấn dw.
-	Để lưu và thoát, bạn nhấn :wq.
+	Để chèn một dòng mới ở trên dòng hiện tại, nhấn O.
+	Để xóa từ dưới con trỏ, nhấn dw.
+	Để lưu và thoát, nhấn :wq.
 Một số phím tắt nâng cao
 	u: Hoàn tác (undo).
 	ctrl+r: Lại làm (redo).
@@ -335,10 +333,10 @@ u Edit Return
 	Để chọn 5 dòng bắt đầu từ dòng hiện tại, bạn gõ: 5yy (y là lệnh yank - tương đương với copy).
 	Để chọn từ dòng hiện tại đến cuối file, bạn gõ: :.,$y
 	Dùng dấu . để lặp lại lệnh: 
-	Nếu bạn vừa copy 5 dòng, muốn copy thêm 5 dòng nữa, chỉ cần gõ ..
+	Nếu vừa copy 5 dòng, muốn copy thêm 5 dòng nữa, chỉ cần gõ ..
 2.	Dán các dòng đã copy: 
-	Để dán các dòng đã copy vào dòng tiếp theo, bạn gõ: p
-	Để dán các dòng đã copy trước dòng hiện tại, bạn gớ: P
+	Để dán các dòng đã copy vào dòng tiếp theo, gõ: p
+	Để dán các dòng đã copy trước dòng hiện tại, gớ: P
 Ví dụ:
 •	Copy 3 dòng bắt đầu từ dòng hiện tại và dán vào cuối file:
 	3yy
