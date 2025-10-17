@@ -1,60 +1,3 @@
-Điều kiện với các tệp, thư mục:
--e kiểm tra xem tệp được chỉ định bởi biến môi trường có tồn tại hay không
--f <tên> : sự tồn tại của tệp thông thường.
--d <tên> : sự tồn tại của thư mục.
--c <tên>: sự tồn tại tệp dạng ký tự
--r <tên>: sự tồn tại và có thể đọc được.
--s <tên>: sự tồn tại và có thể ghi được.
--w <tên>: sự tồn tại và có thể ghi được
--x <tên>: sự tồn tại và có thể chạy được.
-
-Điều kiện với các xâu ký tự
--n s1: xâu s1 có độ dài lớn hơn 0
--z ns1: xâu s1 có độ dài bằng 0
-s1 = s2: hai xâu s1 và s2 giống nhau
-s1 !=s2: hai xâu s1 và s2 không giống nhau
-s1 < s2: xâu s1 đứng trước xâu s2 theo thứ tự của bảng mã ASCII
-s1 > s2 xâu s1 đứng sau xâu s2 theo thứ tự của bảng mã ASCILL
-string biến string không rỗng (not null)
-
-Điều kiện với các số
--a: Đây là toán tử logic AND, kết hợp hai điều kiện kiểm tra.
--s: Điều này kiểm tra xem tệp REPTEXEC_WK_${START_TIME} có trống hay không.
-n1 -eq n2: so sánh bằng.
-n1 -ge ns2: so sánh lớn hơn hoặc bằng,
-n1 -gt n2: so sánh lớn hơn
-n1 -le n2: so sánh nhỏ hơn hoặc bằng.
-n1 -lt n2: so sánh nhỏ hơn
-n1 -ne n2: so sánh không bằng.
-
-$0 : tên tệp đang được thực hiện
-$1 : tham số thứ nhất
-$2: Tham số thứ hai
-!	Phủ định logic	[ ! false ] Kết quả: true
--o	Phép OR - Nếu một trong các toán hạng là đúng thì biểu thức đúng	[ $a -lt 20 -o $b -gt 100 ] Kết quả: true
--a	Phép AND - Nếu tất cả các toán hạng đúng thì biểu thức đúng	[ $a -lt 20 -a $b -gt 100 ] Kết quả:false
-$0 - Tên tệp của lệnh/tập lệnh hiện tại
-$n - Các biến này tương ứng với các đối số truyền vào, n là số nguyên dương. Ví dụ: ./test.sh a b thì đối số $1, $2 lần lượt là a và b
-$# - Số lượng đối số truyền vào. Vd: ./test.sh a b sẽ có 2 đối số
-$? - Trạng thái thoát ra của lệnh trước được chạy (thường là 0 đại diện cho lệnh trước chạy thành công, khác 0 là failed) Max range [0 – 255]
-$$ - Số tiến trình của shell hiện tại. Đối với Shell Script thì đây là số processID mà nó đang chạy
-$! - Process number của lệnh background cuối cùng
-$* - Chứa tất cả các đối số truyền vào. Nếu có 3 đối số truyền vào thì giá trị sẽ là $1 $2 $3 khi sử dụng
-$@ - Chứa tất cả các đối số truyền vào nhưng phân tách thành các đối số riêng lẻ không như $*
-$- cờ (flag)
-+ phép cộng
-– phép trừ
-* phép nhận
-/ phép chia
-% phép lấy phần dư
-== so sánh bằng
-!= so sánh không bằng
-< so sánh nhỏ hơn
-> so sánh lớn hơn
->= so sánh lớn hơn hoặc bằng
-<= so sánh nhỏ hơn hoặc bằng
-|| hoặc
-&& và
 $USER tên người sử dụng hiện tại
 echo in ra màn hình
 read đọc từ bàn phím
@@ -62,47 +5,6 @@ $HOME/$home thư mục chính của người dùng hiện tại
 $dir
 $path
 echo -e :tùy chọn -e cho phép chèn các ký tự, như \n cho dòng mới hoặc \t cho các tab.
-
-Tự comment dòng local foo lại và check xem điều gì sẽ xảy ra.
-
-Nếu như trong script sử dụng tới một biến mà ở các lệnh trước chưa khai báo biến đó, hoặc biến đó chưa có giá trị, bạn có thể sử dụng một vài cú pháp sau được gọi là variable expansion:
-
-#{foo:-"Default value"} : nếu foo không tồn tại hoặc không chứa giá trị, nó sẽ sử dụng giá trị khai báo sau :-.
-➜  /tmp foo= 
-➜  /tmp echo ${foo:-"Default"}
-Default
-➜  /tmp echo ${foo} 
-
-#{foo:="Default value"} : giống như cách trên nhưng sau đó, biến foo sẽ được gán cho giá trị sau :=
-➜  /tmp echo ${foo:="Default"}
-Default
-➜  /tmp echo ${foo}
-Default
-
-Một số tùy chọn của lệnh read yêu cầu một tham số bổ sung để sử dụng. Các tùy chọn được sử dụng phổ biến nhất của lệnh đọc được đề cập như sau:
-
-Tùy chọn Mục đích
--d <dấu phân cách> Nó được sử dụng để lấy đầu vào cho đến khi giá trị dấu phân cách được cung cấp.
--n <số> Nó được sử dụng để lấy đầu vào của một số ký tự cụ thể từ thiết bị đầu cuối và dừng lấy đầu vào trước đó dựa trên dấu phân cách.
--N <số> Nó được sử dụng để lấy đầu vào của một số ký tự cụ thể từ thiết bị đầu cuối, bỏ qua dấu phân cách.
--p <prompt> Nó được sử dụng để in đầu ra của thông báo nhắc trước khi lấy đầu vào.
--s Nó được sử dụng để lấy đầu vào mà không có tiếng vang. Tùy chọn này chủ yếu được sử dụng để lấy đầu vào cho đầu vào mật khẩu.
--a Nó được sử dụng để lấy đầu vào cho mảng được lập chỉ mục.
--t <time> Nó được sử dụng để đặt giới hạn thời gian cho việc nhập liệu.
--u <mô tả tệp> Nó được sử dụng để lấy đầu vào từ tệp.
--r Nó được sử dụng để vô hiệu hóa các dấu gạch chéo ngược.
-
--a <array>	Assigns the provided word sequence to a variable named <array>.
--d <delimiter>	Reads a line until the provided <delimiter> instead of a new line.
--e	Starts an interactive shell session to obtain the line to read.
--i <prefix>	Adds initial text before reading a line as a prefix.
--n <number>	Returns after reading the specified number of characters while honoring the delimiter to terminate early.
--N <number>	Returns after reading the specified number of chars, ignoring the delimiter.
--p <prompt>	Outputs the prompt string before reading user input.
--r	Disable backslashes to escape characters.
--s	Does not echo the user's input.
--t <time>	The command times out after the specified time in seconds.
--u <file descriptor>	Read from file descriptor instead of standard input.
 
 find / -type f -size +1G , find . -size +1G 
 du -h * | grep -v "^\s*$" | sort -n | head -n 10
@@ -116,13 +18,13 @@ scp remote_username@127.0.0.1:/remote/pavietnam.tar.gz /local/directory -> copy 
 scp -i d-key-PRD-0001.PEM user@server:/sourcefile /desfile -> copy
 scp -i d-key-PRD-0001.PEM /sourcefile user@server:/desfile -> đẩy
 
-Kiểm tra định dạng của sda3:
+- Kiểm tra định dạng của sda3:
 df -hT
 
-Sử dụng lệnh df -h để xác định kích thước hiện tại của sda3:
+- Sử dụng lệnh df -h để xác định kích thước hiện tại của sda3:
 df -h
 
-Sử dụng lệnh fdisk /dev/sda để mở rộng kích thước của sda:
+- Sử dụng lệnh fdisk /dev/sda để mở rộng kích thước của sda:
 sudo fdisk /dev/sda
 Nhấn p để liệt kê các phân vùng hiện có.
 Nhấn d để xóa phân vùng sda3.
@@ -132,36 +34,19 @@ Nhập kích thước phân vùng mới.
 Sử dụng lệnh resize2fs /dev/sda3 để tăng kích thước của sda3:
 sudo resize2fs /dev/sda3
 
-lấy trường thứ 2 từ dữ liệu truyền vào bằng lệnh 
+- lấy trường thứ 2 từ dữ liệu truyền vào bằng lệnh 
 ls -l | awk -F ' ' '{print $5 " "}'
 
 echo ${hostname:4:1}
-
 
 stop chronyd: sudo systemctl stop chronyd
 change time: sudo date -s "YYYY-MM-DD HH:MM:SS"
 
 
-tạo một tệp có tên myfile với dung lượng 100MB:
+- tạo một tệp có tên myfile với dung lượng 100MB:
 dd if=/dev/zero of=myfile bs=1M count=100
 
-
-https://phoenixnap.com/kb/bash-read #lệnh read
-https://viblo.asia/p/linux-shell-va-shell-script-variables-basic-operators-Ljy5V1rolra
-https://www.pluralsight.com/resources/blog/cloud/conditions-in-bash-scripting-if-statements
-https://viblo.asia/p/gioi-thieu-ve-linux-shell-va-shell-script-aWj53LweK6m
-https://nguyenvanhieu.vn/hoc-bash-shell-co-ban/
-https://www.tutorialspoint.com/unix/unix-shell-substitutions.htm
-https://cloud.z.com/vn/support/cloud/nen-va-giai-nen-file-tar-gzip-va-zip/
-https://wiki.minhduy.vn/cach-set-va-liet-ke-bien-moi-truong-environment-variables-trong-linux.html
-https://vpsgiare.info/tim-hieu-lap-trinh-bash-shell-script-linux/
-https://tldp.org/LDP/abs/html/
-https://viblo.asia/p/lam-viec-voi-file-csv-va-json-bang-giao-dien-dong-lenh-jvElaW6AKkw
-https://www.gnu.org/software/bash/manual/bash.html#Here-Strings
-https://blogd.net/linux/su-dung-lenh-awk/ #AWK
-https://123host.vn/community/tutorial/lenh-hien-thi-tat-ca-cac-jobs-hien-tai-va-trang-thai-jobs-tren-linux-NzDWi.html #AWK
-
-SSH Tunneling
+- SSH Tunneling
 ssh -L 4000:10.103.1.19:3389 -i AP_windows_server.pem ubuntu@18.183.252.6
 
 check ram: while true ; do echo $(date) >> /tmp/ram_log ; free |& tee -a /tmp/ram_log; sleep 1; done;
@@ -618,6 +503,7 @@ pg_upgrade --check
 
 Tùy distro (Ubuntu / CentOS / Amazon Linux) và loại DB, lệnh sẽ khác nhau.
 
+
 🔵 2️⃣ Nâng cấp MySQL / MariaDB
 🔹 Cách 1: Upgrade bằng package manager
 🧰 Ubuntu/Debian:
@@ -695,5 +581,21 @@ sudo apt install -y mongodb-org
 Start lại:
 sudo systemctl start mongod
 
+
+
 Xác minh:
 mongo --eval "db.version()"
+
+1. Thay thế Chuỗi Đơn giảnThay thế lần xuất hiện đầu tiên của từ "localhost" thành "production" trong tệp config.txt:
+sed 's/localhost/production/' config.txt
+
+2. Thay thế Toàn cục trong Tệp (g flag)Thay thế tất cả các lần xuất hiện của từ "Error" thành "Notice" trên mọi dòng trong tệp, và chỉnh sửa trực tiếp tệp gốc:
+sed -i 's/Error/Notice/g' application.log
+
+3. Chỉ thay thế trên một số dòng cụ thể (Định vị Dòng)Sử dụng địa chỉ dòng (addressing) để giới hạn phạm vi thay thế:Cú phápÝ nghĩaVí dụ<số_dòng>s/...Chỉ thay thế trên dòng số <số_dòng>.sed '5s/user/admin/g' file.txt (Chỉ dòng 5)/<mẫu>/s/...Chỉ thay thế trên các dòng có chứa <mẫu>.sed '/config/s/false/true/g' setup.conf (Chỉ dòng chứa "config")<start>,<end>s/...Chỉ thay thế trong phạm vi từ dòng <start> đến <end>.sed '10,20s/old/new/g' data.csv (Từ dòng 10 đến 20)4. Xóa DòngSử dụng lệnh d (Delete) để xóa dòng:Xóa dòng có chứa một mẫu:Bashsed '/^#/d' script.sh  # Xóa tất cả các dòng bắt đầu bằng dấu # (comment)
+Xóa dòng theo số thứ tự:
+sed '5d' data.txt      # Xóa dòng thứ 5
+sed '1,3d' data.txt    # Xóa từ dòng 1 đến dòng 3
+
+5. Thêm/Chèn DòngSử dụng lệnh i (Insert) để chèn trước dòng được chỉ định, hoặc a (Append) để chèn sau dòng được chỉ định.Bash# Chèn một dòng mới trước dòng có chứa từ "BEGIN"
+sed '/BEGIN/i\--- Dữ liệu mới đã được chèn ở đây ---' file.txt
