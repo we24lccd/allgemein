@@ -646,3 +646,34 @@ Các lệnh quản lý iptables
 sudo iptables -L -v -n,"Liệt kê tất cả các quy tắc hiện tại với chi tiết (số byte, số gói), không phân giải tên."
 sudo iptables -D INPUT 1,Xóa quy tắc đầu tiên trong chuỗi INPUT. (Số thứ tự có thể tìm thấy khi dùng lệnh -L --line-numbers).
 sudo iptables-save > /etc/iptables/rules.v4,Lưu các quy tắc hiện tại (cần cài đặt iptables-persistent hoặc tương đương để đảm bảo các quy tắc được giữ nguyên sau khi khởi động lại).
+
+-A	--append	Thêm (Append) một quy tắc mới vào cuối chuỗi.	iptables -A INPUT ...
+-I	--insert	Chèn (Insert) một quy tắc mới vào vị trí cụ thể trong chuỗi (mặc định là vị trí đầu tiên).	iptables -I INPUT 1 ...
+-D	--delete	Xóa (Delete) một quy tắc cụ thể dựa trên số thứ tự hoặc khớp hoàn toàn với quy tắc.	iptables -D INPUT 1
+-R	--replace	Thay thế (Replace) một quy tắc hiện có ở vị trí cụ thể.	iptables -R INPUT 5 ...
+-L	--list	Liệt kê (List) tất cả các quy tắc trong một chuỗi hoặc tất cả các chuỗi.	iptables -L INPUT
+-F	--flush	Xóa sạch (Flush) tất cả các quy tắc trong một chuỗi hoặc tất cả các chuỗi (nếu không chỉ định chuỗi).	iptables -F
+-P	--policy	Thiết lập chính sách mặc định (Default Policy) cho một chuỗi (ACCEPT, DROP, REJECT).	iptables -P INPUT DROP
+-N	--new-chain	Tạo (New) một chuỗi tùy chỉnh mới.	iptables -N LOGGING
+
+Tùy chọn Liệt kê/Xem (Listing Options)
+-v	--verbose	Hiển thị thông tin chi tiết (verbose), bao gồm số lượng gói (packets) và bytes đã khớp với quy tắc.
+-n	--numeric	Hiển thị địa chỉ IP và cổng ở dạng số thay vì cố gắng phân giải tên (hostname) hoặc tên dịch vụ. Điều này làm lệnh chạy nhanh hơn.
+--line-numbers		Hiển thị số thứ tự của từng quy tắc trong chuỗi, rất hữu ích khi dùng -D hoặc -R.
+
+Tùy chọn Khớp (Matching Options)
+-p	--protocol	Khớp với giao thức mạng (ví dụ: tcp, udp, icmp, all).
+-s	--source	Khớp với địa chỉ IP hoặc dải mạng (CIDR) nguồn.
+-d	--destination	Khớp với địa chỉ IP hoặc dải mạng (CIDR) đích.
+-i	--in-interface	Khớp với giao diện mạng đến (input interface) mà gói tin đi vào (ví dụ: eth0, lo). Chỉ áp dụng cho chuỗi INPUT và FORWARD.
+-o	--out-interface	Khớp với giao diện mạng đi (output interface) mà gói tin đi ra (ví dụ: eth0). Chỉ áp dụng cho chuỗi OUTPUT và FORWARD.
+
+Tùy chọn Khớp Mở rộng (Extended Matches)
+--dport	-m tcp hoặc -m udp	Khớp với cổng đích (destination port).	-p tcp --dport 80
+--sport	-m tcp hoặc -m udp	Khớp với cổng nguồn (source port).	-p udp --sport 53
+--state	-m state	Khớp với trạng thái kết nối (NEW, ESTABLISHED, RELATED, INVALID).	-m state --state ESTABLISHED,RELATED
+
+Tùy chọn Mục tiêu (Target/Jump Options)
+# Cấu trúc: iptables -A <CHUỖI> [Tùy chọn Khớp] -j <MỤC TIÊU>
+# Ví dụ: Thêm quy tắc cho phép kết nối TCP đến cổng 22
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
