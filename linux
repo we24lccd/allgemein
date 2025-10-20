@@ -599,3 +599,50 @@ sed '1,3d' data.txt    # Xóa từ dòng 1 đến dòng 3
 
 5. Thêm/Chèn DòngSử dụng lệnh i (Insert) để chèn trước dòng được chỉ định, hoặc a (Append) để chèn sau dòng được chỉ định.Bash# Chèn một dòng mới trước dòng có chứa từ "BEGIN"
 sed '/BEGIN/i\--- Dữ liệu mới đã được chèn ở đây ---' file.txt
+
+
+1. Cấu hình cơ bản với UFW (Uncomplicated Firewall)
+UFW là công cụ quản lý tường lửa dễ sử dụng hơn, được thiết kế để đơn giản hóa việc cấu hình iptables. Nó thường là lựa chọn mặc định trên các bản phân phối dựa trên Debian/Ubuntu.
+Các lệnh UFW cơ bản:
+
+sudo ufw status,Kiểm tra trạng thái của UFW (bật/tắt) và các quy tắc đang hoạt động. Thêm verbose để xem chi tiết hơn.
+sudo ufw enable,Bật tường lửa UFW. Lệnh này sẽ được hỏi xác nhận vì nó có thể làm ngắt kết nối SSH nếu chưa thiết lập quy tắc cho phép.
+sudo ufw disable,Tắt tường lửa UFW.
+sudo ufw default deny incoming,Thiết lập chính sách mặc định là từ chối tất cả các kết nối đến (incoming).
+sudo ufw default allow outgoing,Thiết lập chính sách mặc định là cho phép tất cả các kết nối đi (outgoing).
+sudo ufw allow 22/tcp,Cho phép kết nối TCP đến trên cổng 22 (thường là SSH).
+sudo ufw allow 80,Cho phép kết nối đến trên cổng 80 (HTTP - giao thức web).
+sudo ufw allow 443/tcp,Cho phép kết nối TCP đến trên cổng 443 (HTTPS - web bảo mật).
+sudo ufw allow from 192.168.1.100 to any port 22,Chỉ cho phép IP cụ thể 192.168.1.100 kết nối đến cổng 22.
+sudo ufw delete allow 80,Xóa quy tắc cho phép kết nối đến cổng 80.
+sudo ufw reset,Đặt lại UFW về trạng thái mặc định (vô hiệu hóa và xóa tất cả các quy tắc).
+
+2. Cấu hình cơ bản với iptables
+iptables hoạt động bằng cách kiểm soát các chuỗi (chains) trong các bảng (tables). Các bảng phổ biến là filter, nat, và mangle. Chuỗi phổ biến nhất là INPUT, OUTPUT, và FORWARD trong bảng filter.
+
+Chuẩn bị và Chính sách mặc định
+Trước khi thêm quy tắc, nên thiết lập chính sách mặc định để bảo vệ hệ thống:
+
+# Xóa tất cả các quy tắc hiện có để bắt đầu sạch sẽ
+sudo iptables -F
+sudo iptables -X
+
+# Thiết lập chính sách mặc định: từ chối tất cả trừ traffic đi ra (OUTPUT)
+sudo iptables -P INPUT DROP      # Từ chối traffic đến
+sudo iptables -P FORWARD DROP    # Từ chối traffic chuyển tiếp
+sudo iptables -P OUTPUT ACCEPT   # Cho phép traffic đi ra
+
+Thiết lập các quy tắc cho phép
+Thêm các quy tắc để cho phép các loại traffic cần thiết:
+
+sudo iptables -A INPUT -i lo -j ACCEPT,Cho phép tất cả traffic trên giao diện loopback (nội bộ).
+"sudo iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT",Cho phép traffic phản hồi từ các kết nối đã được thiết lập. Đây là quy tắc rất quan trọng để các kết nối đi ra có thể nhận được phản hồi.
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT,Cho phép kết nối TCP đến trên cổng 22 (SSH).
+sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT,Cho phép kết nối TCP đến trên cổng 80 (HTTP).
+sudo iptables -A INPUT -p udp --dport 53 -j ACCEPT,Cho phép kết nối UDP đến trên cổng 53 (DNS).
+
+Các lệnh quản lý iptables
+
+sudo iptables -L -v -n,"Liệt kê tất cả các quy tắc hiện tại với chi tiết (số byte, số gói), không phân giải tên."
+sudo iptables -D INPUT 1,Xóa quy tắc đầu tiên trong chuỗi INPUT. (Số thứ tự có thể tìm thấy khi dùng lệnh -L --line-numbers).
+sudo iptables-save > /etc/iptables/rules.v4,Lưu các quy tắc hiện tại (cần cài đặt iptables-persistent hoặc tương đương để đảm bảo các quy tắc được giữ nguyên sau khi khởi động lại).
