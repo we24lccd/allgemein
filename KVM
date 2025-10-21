@@ -1,0 +1,95 @@
+- Pre-Reqs For KVM Installation
+Pre-Work/Pre-Checks
+    Processor’s  Virtualization Extensions are enabled.
+       grep -E 'svm|vmx' /proc/cpuinfo
+    Kernel is great than 2.6.20 
+       uname –a
+    Host Operating System is up to date.
+   yum update -y
+
+Install the Packages
+yum install virt-install qemu-kvm libvirt libvirt-python  libguestfs-tools virt-manager  -y
+
+Enable and Start the Services
+systemctl enable libvirtd
+systemctl start libvirtd
+systemctl status libvirtd
+
+A Clean System Reboot to ensure everything works after reboot
+init 6
+
+After the Host reboot, check libvirtd started successfully.
+systemctl status libvirtd
+
+Also need to ensure the kernel modules for KVM are loaded.
+modinfo kvm_intel
+modinfo kvm
+
+Update the interface configuration files as below 
+cat /etc/sysconfig/network-scripts/ifcfg-eth1
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=eth1
+ONBOOT=yes
+BRIDGE=virbr0
+HWADDR=00:0c:29:41:15:0a 
+
+cat /etc/sysconfig/network-scripts/ifcfg-virbr0
+TYPE=BRIDGE
+DEVICE=virbr0
+BOOTPROTO=none
+ONBOOT=yes
+IPADDR=192.168.1.10
+NETMASK=255.255.255.0
+GATEWAY=192.168.1.1
+
+Note – Replace the IP Address / MAC/UUID Info with the appropriate in your setup.
+
+Enable the IPv4 forwarding
+echo net.ipv4.ip_forward = 1 | tee /usr/lib/sysctl.d/60-libvirtd.conf
+/sbin/sysctl -p /usr/lib/sysctl.d/60-libvirtd.conf
+
+Configure Firewall
+firewall-cmd --permanent --direct --passthrough ipv4 -I FORWARD -i bridge0 -j ACCEPT
+firewall-cmd --permanent --direct --passthrough ipv4 -I FORWARD -o bridge0 -j ACCEPT
+firewall-cmd --reload
+
+e create a LVM VG with name ‘lab_kvm_storage ‘  and LV with name ‘lab_kvm_lv’ then creating a xfs filesystem on the LV. 
+
+vgcreate lab_kvm_storage /dev/sdb
+lvcreate -l +100%FREE -n lab_kvm_lv lab_kvm_storage
+mkfs.xfs /dev/mapper/lab_kvm_storage-lab_kvm_lv    
+
+Off course we will add the fstab entry for auto-mount on every system boot. 
+/dev/mapper/lab_kvm_storage-lab_kvm_lv    /var/lib/libvirt/images xfs     defaults        0 0
+
+Mount the /var/lib/libvirt/images  as a new filesystem
+
+mount –a 
+
+Now let’s create a storage pool and start it. Also we will enable auto-start so pool will be available e on every system boot.
+
+virsh pool-define-as lab_kvm_storagepool --type dir --target /var/lib/libvirt/images
+virsh pool-autostart  lab_kvm_storagepool
+virsh pool-start  lab_kvm_storagepool
+virsh pool-list
+
+
+To see detailed information about a pool , you can run the below command. 
+
+virsh pool-list --all –-details
+
+With this steps – we have Storage Pool Ready
+
+Before creating the guest VM, we need to ensure the Guest OS is supported by the KVM, can check  by running the following command :
+
+osinfo-query os
+
+
+Create a Guest VM
+virt-install  --network bridge:virbr0 --name testvm1 \
+ --os-variant=centos7.0 --ram=1024 --vcpus=1  \
+ --disk path=/var/lib/libvirt/images/testvm1-os.qcow2,format=qcow2,bus=virtio,size=5 \
+  --graphics none  --location=/osmedia/CentOS-7-x86_64-DVD-1511.iso \
+  --extra-args="console=tty0 console=ttyS0,115200"  --check all=off
+
