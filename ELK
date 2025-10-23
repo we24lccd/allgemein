@@ -1,0 +1,177 @@
+BƯỚC 1: Cài đặt Elasticsearch
+Elasticsearch cần Java để hoạt động, nhưng các gói mới thường đi kèm với JRE tích hợp.
+
+A. Thêm kho lưu trữ Elastic
+Bash
+
+# Thêm khóa GPG của Elastic
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
+
+# Thêm kho lưu trữ (dành cho Ubuntu/Debian)
+echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list
+
+# Cập nhật hệ thống
+sudo apt update
+B. Cài đặt Elasticsearch
+Bash
+
+sudo apt install elasticsearch
+C. Cấu hình Cơ bản (elasticsearch.yml)
+Chỉnh sửa file cấu hình chính: /etc/elasticsearch/elasticsearch.yml
+
+# Sử dụng 'vi' hoặc 'nano' để chỉnh sửa
+# sudo nano /etc/elasticsearch/elasticsearch.yml
+
+# 1. Network Settings: Cho phép truy cập từ bên ngoài (nếu cần)
+# Mặc định, nó chỉ lắng nghe trên localhost (127.0.0.1)
+# Thay bằng IP của máy chủ hoặc 0.0.0.0 để lắng nghe tất cả các giao diện
+network.host: 0.0.0.0 
+http.port: 9200
+
+# 2. Cluster Settings: Tên Cluster
+cluster.name: my-elk-cluster
+
+# 3. Discovery: Tăng tính sẵn sàng (Chỉ cần nếu bạn có nhiều Nodes)
+# Thay thế IP bên dưới bằng IP của các Nodes Elasticsearch của bạn
+# discovery.seed_hosts: ["192.168.1.10", "192.168.1.11"] 
+```
+
+#### D. Khởi động Elasticsearch
+
+```bash
+# Tải lại cấu hình hệ thống
+sudo systemctl daemon-reload
+
+# Kích hoạt tự khởi động khi boot
+sudo systemctl enable elasticsearch
+
+# Khởi động dịch vụ
+sudo systemctl start elasticsearch
+
+# Kiểm tra trạng thái
+sudo systemctl status elasticsearch
+```
+
+#### E. Kiểm tra (Health Check)
+
+Sau khi khởi động, Elasticsearch sẽ chạy trên cổng 9200.
+
+```bash
+curl -X GET "localhost:9200/?pretty"
+```
+
+> **Lưu ý Bảo mật:** Elasticsearch 8.x mặc định bật bảo mật (Security), yêu cầu tạo mật khẩu, chứng chỉ SSL và tự động thiết lập quyền truy cập cho Kibana. Bạn cần sao lưu mật khẩu `elastic` và mã token Kibana được in ra khi cài đặt hoặc khi khởi động lần đầu.
+
+---
+
+## BƯỚC 2: Cài đặt và cấu hình Kibana
+
+Kibana là giao diện web để tương tác với Elasticsearch.
+
+#### A. Cài đặt Kibana
+
+```bash
+sudo apt install kibana
+
+B. Cấu hình Cơ bản (kibana.yml)
+Chỉnh sửa file cấu hình chính: /etc/kibana/kibana.yml
+# sudo nano /etc/kibana/kibana.yml
+
+# 1. Server settings: Cho phép truy cập từ bên ngoài
+server.host: "0.0.0.0"
+server.port: 5601
+
+# 2. Elasticsearch Host: Trỏ Kibana đến Elasticsearch
+elasticsearch.hosts: ["http://localhost:9200"] 
+```
+
+#### C. Khởi động Kibana
+
+```bash
+sudo systemctl enable kibana
+sudo systemctl start kibana
+sudo systemctl status kibana
+```
+
+#### D. Truy cập Kibana
+
+Truy cập trình duyệt bằng địa chỉ: `http://<Máy chủ ELK IP>:5601`.
+
+* Nếu bạn đang sử dụng Elastic 8.x (có bảo mật), Kibana sẽ yêu cầu bạn nhập **mã xác thực (Verification Code)**. Sử dụng lệnh `sudo /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana` để tạo token, sau đó quay lại trang Kibana và hoàn tất thiết lập.
+
+---
+
+## BƯỚC 3: Cài đặt và cấu hình Logstash
+
+Logstash sẽ thu thập, xử lý và gửi logs đến Elasticsearch. Logstash cần các file cấu hình đặc biệt để định nghĩa đường ống (pipeline).
+
+#### A. Cài đặt Logstash
+
+```bash
+sudo apt install logstash
+```
+
+#### B. Tạo file cấu hình Logstash (pipeline.conf)
+
+Chúng ta sẽ tạo một file cấu hình đơn giản để nhận log từ Beats (ví dụ: Filebeat) và gửi chúng đến Elasticsearch.
+
+Tạo thư mục cấu hình và file: `/etc/logstash/conf.d/01-beats-input.conf`
+
+```bash
+sudo nano /etc/logstash/conf.d/01-beats-input.conf
+
+# Đây là cấu hình cho Logstash Pipeline
+input {
+  # Định nghĩa đầu vào để nhận dữ liệu từ Beats (ví dụ: Filebeat)
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  # Ở đây bạn có thể thêm các bộ lọc (filter) để xử lý logs
+  # Ví dụ: grok, date, mutate, v.v.
+  # Hiện tại, để đơn giản, chúng ta bỏ qua filter
+}
+
+output {
+  # Định nghĩa đầu ra là Elasticsearch
+  elasticsearch {
+    hosts => ["http://localhost:9200"]
+    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}" 
+    # Tên Index: Ví dụ: filebeat-8.10.0-2025.10.23
+  }
+  # Có thể thêm đầu ra console để debug (gỡ lỗi)
+  # stdout { codec => rubydebug }
+}
+
+C. Khởi động Logstash
+sudo systemctl enable logstash
+sudo systemctl start logstash
+sudo systemctl status logstash
+
+---
+
+## BƯỚC 4: Cài đặt và cấu hình Filebeat (Thành phần thu thập)
+
+Chúng ta sẽ dùng Filebeat (từ bộ Beats) để thu thập logs và gửi chúng đến Logstash.
+
+#### A. Cài đặt Filebeat
+
+```bash
+sudo apt install filebeat
+
+#### B. Cấu hình Filebeat (filebeat.yml)
+
+Chỉnh sửa file cấu hình chính: `/etc/filebeat/filebeat.yml`
+
+
+http://googleusercontent.com/immersive_entry_chip/3
+
+### HOÀN THÀNH
+
+Lúc này, các thành phần đã được liên kết:
+
+**Filebeat** đọc log → Gửi đến **Logstash** (trên cổng 5044) → **Logstash** xử lý → Gửi đến **Elasticsearch** (trên cổng 9200) → **Kibana** (trên cổng 5601) truy vấn và hiển thị.
+
+Bạn có thể vào giao diện Kibana, vào phần **Analytics > Discover** để kiểm tra xem dữ liệu logs đã được đưa vào thành công hay chưa.
