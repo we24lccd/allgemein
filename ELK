@@ -2,7 +2,6 @@ BƯỚC 1: Cài đặt Elasticsearch
 Elasticsearch cần Java để hoạt động, nhưng các gói mới thường đi kèm với JRE tích hợp.
 
 A. Thêm kho lưu trữ Elastic
-Bash
 
 # Thêm khóa GPG của Elastic
 wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg
@@ -13,7 +12,6 @@ echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://arti
 # Cập nhật hệ thống
 sudo apt update
 B. Cài đặt Elasticsearch
-Bash
 
 sudo apt install elasticsearch
 C. Cấu hình Cơ bản (elasticsearch.yml)
@@ -31,14 +29,13 @@ http.port: 9200
 # 2. Cluster Settings: Tên Cluster
 cluster.name: my-elk-cluster
 
-# 3. Discovery: Tăng tính sẵn sàng (Chỉ cần nếu bạn có nhiều Nodes)
-# Thay thế IP bên dưới bằng IP của các Nodes Elasticsearch của bạn
+# 3. Discovery: Tăng tính sẵn sàng (Chỉ cần nếu  có nhiều Nodes)
+# Thay thế IP bên dưới bằng IP của các Nodes Elasticsearch của 
 # discovery.seed_hosts: ["192.168.1.10", "192.168.1.11"] 
 ```
 
 #### D. Khởi động Elasticsearch
 
-```bash
 # Tải lại cấu hình hệ thống
 sudo systemctl daemon-reload
 
@@ -56,11 +53,10 @@ sudo systemctl status elasticsearch
 
 Sau khi khởi động, Elasticsearch sẽ chạy trên cổng 9200.
 
-```bash
 curl -X GET "localhost:9200/?pretty"
 ```
 
-> **Lưu ý Bảo mật:** Elasticsearch 8.x mặc định bật bảo mật (Security), yêu cầu tạo mật khẩu, chứng chỉ SSL và tự động thiết lập quyền truy cập cho Kibana. Bạn cần sao lưu mật khẩu `elastic` và mã token Kibana được in ra khi cài đặt hoặc khi khởi động lần đầu.
+> **Lưu ý Bảo mật:** Elasticsearch 8.x mặc định bật bảo mật (Security), yêu cầu tạo mật khẩu, chứng chỉ SSL và tự động thiết lập quyền truy cập cho Kibana.  cần sao lưu mật khẩu `elastic` và mã token Kibana được in ra khi cài đặt hoặc khi khởi động lần đầu.
 
 ---
 
@@ -70,7 +66,6 @@ Kibana là giao diện web để tương tác với Elasticsearch.
 
 #### A. Cài đặt Kibana
 
-```bash
 sudo apt install kibana
 
 B. Cấu hình Cơ bản (kibana.yml)
@@ -87,7 +82,6 @@ elasticsearch.hosts: ["http://localhost:9200"]
 
 #### C. Khởi động Kibana
 
-```bash
 sudo systemctl enable kibana
 sudo systemctl start kibana
 sudo systemctl status kibana
@@ -97,7 +91,7 @@ sudo systemctl status kibana
 
 Truy cập trình duyệt bằng địa chỉ: `http://<Máy chủ ELK IP>:5601`.
 
-* Nếu bạn đang sử dụng Elastic 8.x (có bảo mật), Kibana sẽ yêu cầu bạn nhập **mã xác thực (Verification Code)**. Sử dụng lệnh `sudo /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana` để tạo token, sau đó quay lại trang Kibana và hoàn tất thiết lập.
+* Nếu  đang sử dụng Elastic 8.x (có bảo mật), Kibana sẽ yêu cầu  nhập **mã xác thực (Verification Code)**. Sử dụng lệnh `sudo /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token -s kibana` để tạo token, sau đó quay lại trang Kibana và hoàn tất thiết lập.
 
 ---
 
@@ -107,7 +101,6 @@ Logstash sẽ thu thập, xử lý và gửi logs đến Elasticsearch. Logstash
 
 #### A. Cài đặt Logstash
 
-```bash
 sudo apt install logstash
 ```
 
@@ -129,7 +122,7 @@ input {
 }
 
 filter {
-  # Ở đây bạn có thể thêm các bộ lọc (filter) để xử lý logs
+  # Ở đây  có thể thêm các bộ lọc (filter) để xử lý logs
   # Ví dụ: grok, date, mutate, v.v.
   # Hiện tại, để đơn giản, chúng ta bỏ qua filter
 }
@@ -174,4 +167,4 @@ Lúc này, các thành phần đã được liên kết:
 
 **Filebeat** đọc log → Gửi đến **Logstash** (trên cổng 5044) → **Logstash** xử lý → Gửi đến **Elasticsearch** (trên cổng 9200) → **Kibana** (trên cổng 5601) truy vấn và hiển thị.
 
-Bạn có thể vào giao diện Kibana, vào phần **Analytics > Discover** để kiểm tra xem dữ liệu logs đã được đưa vào thành công hay chưa.
+ có thể vào giao diện Kibana, vào phần **Analytics > Discover** để kiểm tra xem dữ liệu logs đã được đưa vào thành công hay chưa.
