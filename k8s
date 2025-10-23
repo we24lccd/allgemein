@@ -57,3 +57,9 @@ Kiểm tra lịch sử các phiên bản của Deployment: kubectl rollout histo
 - NodePort: Sử dụng khi cần truy cập từ bên ngoài nhưng không muốn sử dụng load balancer bên ngoài.
 - LoadBalancer: Sử dụng khi cần cung cấp dịch vụ cho người dùng bên ngoài.
 - ExternalName: Sử dụng để kết nối với các dịch vụ bên ngoài.
+- Namespace (Không gian tên) trong Kubernetes là một cơ chế cung cấp khả năng phân vùng ảo (virtual clustering) trong một cụm Kubernetes vật lý duy nhất.
+
+HA K8s Cluster By DevOps Shack:
+https://github.com/jaiswaladi246/HA-K8-Cluster/blob/main/devops-shack-HA-K8-cluster.md
+
+
