@@ -1,0 +1,182 @@
+1. Mongo DB
+
+Thực hiện trên cả 3 servers
+Cài đặt MongoDB
+ 
+Cài đặt các công cụ cần thiết
+# apt install -y net-tools telnet traceroute
+ 
+Cài đặt MongoDB version 7.0.x
+# apt install software-properties-common gn upg apt-transport-https ca-certificates -y
+# curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+# echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+# apt update
+# apt install mongodb-org -y
+ 
+
+Mở file cấu hình để chỉnh sửa thiết lập mongodb thành cluster
+# vi /etc/mongod.conf
+ 
+Tìm và sửa 2 phần này trong file (xem video bài giảng để rõ hơn)
+ bindIp: 0.0.0.0
+
+replication:
+replSetName: "mongodb-devopseduvn"
+ 
+
+Khởi động lại mongodb để áp dụng cấu hình mới
+# systemctl restart mongod
+ 
+Thực hiện trên server 1
+Khởi tạo cụm mongodb
+ 
+Truy cập môi trường mongodb
+# mongosh
+ 
+
+Khởi tạo cụm
+test> rs.initiate( {
+      _id : "mongodb-cluster-devopseduvn",
+      members: [
+         { _id: 0, host: "server-1:27017" },
+         { _id: 1, host: "server-2:27017" },
+         { _id: 2, host: "server-3:27017" }
+      ]
+   })
+
+mongodb-cluster-devopseduvn [direct: secondary] test> rs.status()
+mongodb-cluster-devopseduvn [direct: primary] test> rs.isMaster()
+ 
+Thêm thử dữ liệu test tính HA
+
+mongodb-cluster-devopseduvn [direct: primary] test> use devopseduvndb
+mongodb-cluster-devopseduvn [direct: primary] devopseduvndb> db.courses.insertOne({ "name": ["DevOps for freshers", "pipeline DevSecOps", "HA tools"] }) 
+ 
+
+Thực hiện trên server 2 hoặc server 3
+Kiểm tra tính đồng bộ dữ liệu
+ 
+
+Truy cập môi trường mongodb
+# mongosh
+ 
+
+Kiểm tra dữ liệu
+mongodb-cluster-devopseduvn [direct: secondary] test> show dbs
+mongodb-cluster-devopseduvn [direct: secondary] test> use devopseduvndb
+mongodb-cluster-devopseduvn [direct: secondary] devopseduvndb> show collections 
+ 
+
+Kiểm tra tính cluster replica không thể thêm dữ liệu
+
+mongodb-cluster-devopseduvn [direct: secondary] devopseduvndb> db.accounts.insertOne({ "username": ["elroydevops", "manhnv"] })
+ 
+
+Thực hiện trên server 1
+Kiểm tra tính HA
+ 
+
+Tắt/khởi động lại server giả định server bị lỗi
+# reboot
+ 
+
+Thực hiện trên server 2 hoặc server 3
+Kiểm tra tính HA
+ 
+
+Kiểm tra xem mongodb server 2 hoặc 3 xem được đề xuất làm primary không tương tự như video bài giảng
+
+ 
+
+Thực hiện trên cả 3 servers
+Cấu hình VIP (virtual IP)
+ 
+
+Cài đặt keepalived
+# apt install -y keepalived
+ 
+
+Thực hiện trên server 1
+Cấu hình keepalived
+ 
+
+Thêm file cấu hình
+# vi /etc/keepalived/keepalived.conf
+ 
+
+Nội dung sau (xem bài giảng để hiểu chi tiết)
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens33
+    virtual_router_id 51
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass password
+    }
+    virtual_ipaddress {
+        192.168.213.14
+    }
+}
+ 
+
+Thực hiện trên server 2
+Cấu hình keepalived
+ 
+
+Thêm file cấu hình
+# vi /etc/keepalived/keepalived.conf
+ 
+
+Nội dung sau (xem bài giảng để hiểu chi tiết)
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens33
+    virtual_router_id 51
+    priority 90
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass password
+    }
+    virtual_ipaddress {
+        192.168.213.14
+    }
+}
+ 
+
+Thực hiện trên server 3
+Cấu hình keepalived
+ 
+
+Thêm file cấu hình
+# vi /etc/keepalived/keepalived.conf
+ 
+
+Nội dung sau (xem bài giảng để hiểu chi tiết)
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens33
+    virtual_router_id 51
+    priority 80
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass password
+    }
+    virtual_ipaddress {
+        192.168.213.14
+    }
+}
+ 
+
+Thực hiện trên cả 3 servers
+Cấu hình VIP (virtual IP)
+ 
+
+Khởi động lại keepalived
+# systemctl restart keepalived
