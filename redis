@@ -1,0 +1,162 @@
+Cài đặt Redis trên Linux
+A. Cài từ package (Ubuntu / Debian)
+sudo apt update
+sudo apt install redis-server -y
+
+Kiểm tra:
+
+redis-cli ping
+# => PONG
+
+B. Cài thủ công từ source (nếu cần phiên bản mới nhất)
+sudo apt install build-essential tcl
+wget https://download.redis.io/releases/redis-7.2.5.tar.gz
+tar xzf redis-7.2.5.tar.gz
+cd redis-7.2.5
+make
+sudo make install
+
+
+Chạy Redis:
+redis-server /etc/redis/redis.conf
+
+🧩 III. Cấu hình Redis cơ bản (/etc/redis/redis.conf)
+🔸 1. Network & Security
+bind 127.0.0.1 ::1        # Chỉ cho phép localhost (không mở public)
+protected-mode yes
+port 6379
+
+
+➡ Nếu cần truy cập từ xa (chỉ trong mạng nội bộ):
+bind 0.0.0.0
+requirepass MyStrongPassword123
+
+🔸 2. Persistence (Lưu dữ liệu ra đĩa)
+
+Redis có 2 cơ chế:
+
+Cơ chế	File	Đặc điểm
+RDB (snapshot)	dump.rdb	Backup định kỳ, nhanh
+AOF (Append Only File)	appendonly.aof	Ghi log mọi thay đổi, an toàn hơn nhưng chậm hơn
+
+Bật AOF:
+appendonly yes
+appendfsync everysec
+
+🔸 3. Memory Management
+maxmemory 2gb
+maxmemory-policy allkeys-lru   # Xóa key ít dùng khi đầy RAM
+
+
+Chính sách memory:
+noeviction: lỗi khi hết RAM
+volatile-lru: xóa key có TTL cũ
+allkeys-lru: xóa key ít dùng nhất
+volatile-ttl: xóa key sắp hết hạn
+
+🔸 4. Logging
+logfile /var/log/redis/redis-server.log
+loglevel notice
+
+🔸 5. Systemd service
+
+Enable và start Redis tự động:
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+sudo systemctl status redis-server
+
+🧠 IV. Các lệnh cơ bản Redis CLI
+Lệnh	Mô tả
+redis-cli ping	Kiểm tra kết nối
+SET key value	Gán giá trị
+GET key	Lấy giá trị
+DEL key	Xóa key
+KEYS *	Liệt kê tất cả key
+INFO memory	Xem RAM dùng
+MONITOR	Xem live command log
+FLUSHALL	Xóa toàn bộ database
+CONFIG GET *	Xem cấu hình hiện tại
+🧰 V. Backup & Restore
+Backup (tự động khi snapshot RDB)
+
+File backup mặc định:
+/var/lib/redis/dump.rdb
+
+
+Tạo backup thủ công:
+redis-cli SAVE
+cp /var/lib/redis/dump.rdb /backup/redis_$(date +%F).rdb
+
+Restore:
+Stop Redis
+
+Copy file dump.rdb vào /var/lib/redis/
+Start lại Redis
+
+Redis sẽ tự load data từ file đó
+
+🔁 VI. Redis Replication & Sentinel (High Availability)
+A. Replication
+
+Redis hỗ trợ mô hình Master – Replica
+Trên replica node:
+
+replicaof 192.168.10.10 6379
+masterauth MyStrongPassword123
+
+Kiểm tra:
+redis-cli INFO replication
+
+B. Redis Sentinel (Failover tự động)
+Quản lý nhiều Redis node, giám sát Master/Replica
+File cấu hình /etc/redis/sentinel.conf:
+
+port 26379
+sentinel monitor mymaster 192.168.10.10 6379 2
+sentinel auth-pass mymaster MyStrongPassword123
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 10000
+
+
+Start:
+redis-sentinel /etc/redis/sentinel.conf
+
+⚡ VII. Monitoring Redis
+A. Dùng CLI:
+redis-cli INFO stats
+redis-cli INFO memory
+redis-cli INFO clients
+
+B. Exporter cho Prometheus:
+
+Cài redis_exporter:
+
+wget https://github.com/oliver006/redis_exporter/releases/download/v1.55.0/redis_exporter-v1.55.0.linux-amd64.tar.gz
+tar -xzf redis_exporter*.tar.gz
+./redis_exporter --redis.addr=redis://localhost:6379
+
+
+→ Dùng Grafana import dashboard “Redis Overview”.
+
+🧩 VIII. Troubleshooting Redis
+Vấn đề	Nguyên nhân	Hướng xử lý
+Không kết nối được Redis từ client	bind 127.0.0.1 hoặc protected-mode yes	Chỉnh bind 0.0.0.0, mở port 6379
+Connection Refused	Redis chưa start	systemctl status redis-server
+Password sai (NOAUTH)	Thiếu requirepass hoặc sai password	Kiểm tra redis.conf và reconnect
+Out of memory	maxmemory nhỏ hoặc policy noeviction	Tăng RAM hoặc dùng allkeys-lru
+Disk full khi bật AOF	File appendonly.aof quá lớn	Dùng BGREWRITEAOF hoặc disable tạm
+Master – Replica sync fail	Network delay hoặc auth fail	Kiểm tra replicaof và masterauth
+High latency	Swapping hoặc network slow	Dùng INFO latency, tách cache khỏi disk IO
+Redis crash loop	dump.rdb corrupt	Xóa dump.rdb và restore từ backup
+CPU 100%	Keyspace lớn, scan hoặc MONITOR	Tránh dùng KEYS *, dùng SCAN thay thế
+💡 IX. Redis trong môi trường Production
+
+✅ Checklist System Engineer:
+ maxmemory & eviction policy rõ ràng
+ Dùng AOF hoặc RDB snapshot backup định kỳ
+ Master–Replica + Sentinel failover
+ Monitoring Prometheus + Grafana
+ Limit client connections (maxclients)
+ Dùng rename-command để ẩn lệnh nguy hiểm (FLUSHALL, CONFIG)
+ Bảo mật: requirepass, firewall, VPN nội bộ
+ Tune kernel: vm.overcommit_memory=1, tcp-backlog, somaxconn
