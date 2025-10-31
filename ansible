@@ -1,0 +1,192 @@
+2. Cài đặt Ansible
+🐧 Trên Ubuntu/Debian
+sudo apt update
+sudo apt install -y ansible python3-pip
+ansible --version
+
+🐧 Trên RHEL/CentOS
+sudo yum install epel-release -y
+sudo yum install ansible -y
+
+🐍 Từ pip (phiên bản mới nhất)
+pip install ansible
+
+🧩 Kiểm tra
+ansible --version
+ansible all -i localhost, -m ping
+
+🏗️ 3. Cấu trúc thư mục chuẩn (Best Practice)
+ansible-project/
+├── ansible.cfg
+├── inventory/
+│   ├── hosts.ini
+│   └── group_vars/
+│       ├── web.yml
+│       ├── db.yml
+├── roles/
+│   ├── nginx/
+│   │   ├── tasks/main.yml
+│   │   ├── templates/nginx.conf.j2
+│   │   └── handlers/main.yml
+├── playbooks/
+│   ├── site.yml
+│   └── deploy.yml
+└── files/
+    └── ssl.key
+
+🧭 4. Cấu hình cơ bản
+🔹 ansible.cfg
+[defaults]
+inventory = ./inventory/hosts.ini
+remote_user = devops
+host_key_checking = False
+timeout = 30
+log_path = ./ansible.log
+
+🔹 inventory/hosts.ini
+[web]
+192.168.1.10
+192.168.1.11
+
+[db]
+192.168.1.20
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+🔹 Ping kiểm tra kết nối
+ansible all -m ping
+
+🧱 5. Playbook cơ bản
+Ví dụ: Cài đặt Nginx
+---
+- name: Install and start Nginx
+  hosts: web
+  become: yes
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+
+Chạy playbook:
+
+ansible-playbook playbooks/nginx.yml
+
+🧩 6. Roles và Reusability
+Ví dụ: Role “nginx”
+
+tasks/main.yml
+
+- include_tasks: install.yml
+- include_tasks: config.yml
+- include_tasks: service.yml
+
+
+templates/nginx.conf.j2
+
+server {
+  listen 80;
+  server_name {{ inventory_hostname }};
+  root /var/www/html;
+}
+
+
+handlers/main.yml
+
+- name: restart nginx
+  service:
+    name: nginx
+    state: restarted
+
+
+Gọi role:
+
+- hosts: web
+  roles:
+    - nginx
+
+🔒 7. Quản lý Secrets với Ansible Vault
+
+Tạo file bí mật:
+
+ansible-vault create secrets.yml
+
+
+Giải mã tạm thời:
+ansible-vault view secrets.yml
+ansible-vault edit secrets.yml
+
+
+Sử dụng trong playbook:
+vars_files:
+  - secrets.yml
+
+
+Chạy playbook có mã hóa:
+ansible-playbook playbooks/deploy.yml --ask-vault-pass
+
+🛠️ 8. Troubleshooting – Các lỗi phổ biến
+❌ Lỗi SSH Permission Denied
+
+Nguyên nhân:
+
+Key SSH sai / user không có quyền sudo
+Giải pháp:
+
+Kiểm tra ansible_user và key path trong inventory
+
+Chạy: ssh -i ~/.ssh/id_rsa user@host để xác minh
+
+❌ “Failed to lock apt” hoặc “Yum lock”
+
+Nguyên nhân: có process khác đang chạy apt/yum
+Giải pháp:
+sudo rm /var/lib/apt/lists/lock
+sudo rm /var/lib/dpkg/lock*
+sudo dpkg --configure -a
+
+❌ “UNREACHABLE! Host unreachable”
+
+Nguyên nhân: firewall hoặc host key checking
+Giải pháp:
+
+Thêm vào ansible.cfg:
+host_key_checking = False
+
+Mở port SSH (22/tcp)
+
+❌ Template không render biến
+
+Nguyên nhân: sai cú pháp Jinja2 hoặc chưa khai báo biến
+Giải pháp:
+Kiểm tra:
+ansible-playbook playbook.yml --check --diff -vvv
+
+❌ Vault password không khớp
+
+Giải pháp:
+
+Sử dụng --ask-vault-pass hoặc tạo vault ID file riêng:
+ansible-playbook site.yml --vault-id dev@~/.vault_pass.txt
+
+📊 9. Giám sát & Logging
+
+Bật log trong ansible.cfg
+
+[defaults]
+log_path = /var/log/ansible.log
+
+
+Dùng -v, -vv, -vvv để debug chi tiết:
+
+ansible-playbook deploy.yml -vvv
