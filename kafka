@@ -1,92 +1,168 @@
-III. Cấu hình Kafka cho System Engineer
-1. Cấu hình cơ bản:
+Cài đặt Kafka trên Linux (Ubuntu/CentOS)
+A. Cài đặt Java
+
+Kafka cần Java 11 trở lên:
+sudo apt update
+sudo apt install openjdk-11-jdk -y
+java -version
+
+B. Tải và giải nén Kafka
+cd /opt
+sudo wget https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+sudo tar -xvzf kafka_2.13-3.7.0.tgz
+sudo mv kafka_2.13-3.7.0 kafka
+cd kafka
+
+🗂️ 3. Cấu hình Kafka cơ bản
 
 File cấu hình chính:
 /opt/kafka/config/server.properties
 
-Các thông số quan trọng:
+✅ Mẫu cấu hình Production cơ bản:
+# ID của broker
+broker.id=1
 
-broker.id=1                     # ID duy nhất cho mỗi broker
-listeners=PLAINTEXT://:9092     # Giao thức và port Kafka lắng nghe
-log.dirs=/var/lib/kafka/data    # Thư mục lưu dữ liệu
-zookeeper.connect=localhost:2181  # Nếu dùng ZooKeeper mode
+# Listener
+listeners=PLAINTEXT://0.0.0.0:9092
+advertised.listeners=PLAINTEXT://kafka01.internal.local:9092
+
+# Log lưu message
+log.dirs=/var/lib/kafka/data
+
+# Zookeeper (nếu không dùng KRaft mode)
+zookeeper.connect=zookeeper01:2181,zookeeper02:2181,zookeeper03:2181
+
+# Số partition mặc định
 num.partitions=3
-default.replication.factor=2
 
-2. Cấu hình cho High Availability (HA):
+# Sao lưu dữ liệu
+default.replication.factor=3
+min.insync.replicas=2
 
-Cluster tối thiểu 3 broker
+# Giới hạn dung lượng / thời gian lưu
+log.retention.hours=168
+log.segment.bytes=1073741824
 
-replication.factor >= 3
-
-min.insync.replicas=2 để tránh mất dữ liệu
-
-unclean.leader.election.enable=false để chỉ cho phép leader có dữ liệu mới nhất
-
-3. Security
-
-Bật SSL / SASL:
-
-listeners=SASL_SSL://:9093
-security.inter.broker.protocol=SASL_SSL
-sasl.mechanism.inter.broker.protocol=SCRAM-SHA-512
-
-
-ACL quản lý quyền publish / consume:
-
-kafka-acls.sh --add --allow-principal User:app --operation Read --topic mytopic
-
-🧰 IV. Triển khai Kafka thực tế
-1. Cài đặt (đơn giản nhất):
-wget https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
-tar -xzf kafka_2.13-3.7.0.tgz
-cd kafka_2.13-3.7.0
-
-2. Khởi động dịch vụ:
-# Start ZooKeeper (nếu dùng)
+🧩 4. Khởi động dịch vụ Kafka
+(A) Start ZooKeeper (nếu dùng)
 bin/zookeeper-server-start.sh config/zookeeper.properties
 
-# Start Kafka
+(B) Start Kafka
 bin/kafka-server-start.sh config/server.properties
 
-3. Tạo topic, gửi & nhận message:
+(C) Kiểm tra tiến trình:
+ps aux | grep kafka
+netstat -tulnp | grep 9092
+
+🧪 5. Kiểm tra hoạt động cơ bản
+Tạo topic
 bin/kafka-topics.sh --create --topic demo --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+
+Liệt kê topic
+bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+
+Gửi message (Producer)
 bin/kafka-console-producer.sh --topic demo --bootstrap-server localhost:9092
+
+Nhận message (Consumer)
 bin/kafka-console-consumer.sh --topic demo --bootstrap-server localhost:9092 --from-beginning
 
-🛠️ V. Giám sát & Bảo trì
-1. Monitoring metrics:
+🔐 6. Cấu hình bảo mật (Security)
+(A) Bật SSL encryption
 
-JVM heap / GC time
+Sinh chứng chỉ:
 
-Lag giữa Producer và Consumer
+keytool -genkey -keystore kafka.server.keystore.jks -validity 365 -storepass changeit -keypass changeit -dname "CN=kafka01"
 
-Disk I/O, network latency
 
-Topic throughput (messages/sec)
+Chỉnh server.properties:
 
-Công cụ phổ biến:
+listeners=SSL://:9093
+ssl.keystore.location=/etc/kafka/kafka.server.keystore.jks
+ssl.keystore.password=changeit
+security.inter.broker.protocol=SSL
 
-Prometheus + Grafana (Kafka Exporter)
+(B) Bật xác thực SASL/PLAIN
+listeners=SASL_PLAINTEXT://:9094
+sasl.enabled.mechanisms=PLAIN
+sasl.mechanism.inter.broker.protocol=PLAIN
 
-Confluent Control Center
 
-LinkedIn Burrow (consumer lag monitoring)
+Tạo file người dùng:
 
-2. Log location:
+echo 'user_admin=admin-password' > /opt/kafka/config/kafka_server_jaas.conf
 
-/opt/kafka/logs/server.log
+📈 7. Monitoring Kafka
+Prometheus Exporter:
 
-/var/log/kafka/ (nếu chạy service)
+Cài kafka_exporter:
 
-Theo dõi:
+wget https://github.com/danielqsj/kafka_exporter/releases/download/v1.7.0/kafka_exporter-1.7.0.linux-amd64.tar.gz
+tar -xzf kafka_exporter-1.7.0.linux-amd64.tar.gz
+./kafka_exporter --kafka.server=kafka01:9092
 
-journalctl -u kafka
-tail -f /opt/kafka/logs/server.log
 
-3. Cấu hình retention:
+Sau đó cấu hình Grafana → add data source Prometheus → import dashboard “Kafka Overview”.
 
-Giới hạn dữ liệu cũ:
+💾 8. Backup & Restore Kafka data
+A. Backup topic config:
+bin/kafka-topics.sh --describe --topic mytopic --bootstrap-server localhost:9092 > topic_config.txt
 
-log.retention.hours=168     # Giữ dữ liệu 7 ngày
-log.segment.bytes=1073741824  # 1 GB mỗi segment
+B. Backup log data:
+
+Dữ liệu lưu tại /var/lib/kafka/data
+
+Snapshot bằng rsync / LVM snapshot / filesystem backup
+
+C. Restore:
+
+Stop broker
+
+Restore thư mục data
+
+Start lại broker
+
+🧠 9. Troubleshooting Kafka
+Vấn đề	Nguyên nhân	Cách xử lý
+Broker không start được	Port 9092 bị chiếm, file lock, hoặc lỗi ZooKeeper	`netstat -tulnp
+Producer Timeout	Không kết nối được tới advertised.listeners	Kiểm tra DNS hoặc hostname mapping
+Consumer lag tăng cao	Consumer chậm hoặc dead	kafka-consumer-groups.sh --describe để xem lag
+Disk full	retention time quá lâu	Giảm log.retention.hours hoặc xóa topic cũ
+Replication under-replicated	Broker khác bị down	kafka-topics.sh --describe → restart broker mất kết nối
+Controller election fail	ZooKeeper hoặc KRaft lỗi	Kiểm tra controller.log hoặc zookeeper.log
+High GC pause time	JVM heap không đủ	Điều chỉnh KAFKA_HEAP_OPTS="-Xmx4G -Xms4G"
+Unclean leader election	Mất dữ liệu khi leader chết	Tắt unclean.leader.election.enable và tăng replication
+🔄 10. Scale & HA Kafka
+Scale out thêm broker:
+
+Copy config từ broker cũ
+
+Đặt broker.id mới
+
+Start broker
+
+Kafka tự động cân bằng partition (hoặc dùng kafka-reassign-partitions.sh)
+
+Failover test:
+
+Tắt 1 broker → consumer vẫn hoạt động bình thường nếu replication đủ
+
+🧩 11. Kafka trong Production
+
+✅ Checklist cho System Engineer:
+
+ 3–5 broker HA
+
+ Replication ≥ 3
+
+ Min in-sync replicas = 2
+
+ Security: SSL + SASL
+
+ Monitoring: Prometheus + Grafana
+
+ Backup: log + metadata
+
+ Alert: consumer lag, disk usage, offline partitions
+
+ Integration: Kafka Connect, Schema Registry
