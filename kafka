@@ -1,0 +1,92 @@
+III. Cấu hình Kafka cho System Engineer
+1. Cấu hình cơ bản:
+
+File cấu hình chính:
+/opt/kafka/config/server.properties
+
+Các thông số quan trọng:
+
+broker.id=1                     # ID duy nhất cho mỗi broker
+listeners=PLAINTEXT://:9092     # Giao thức và port Kafka lắng nghe
+log.dirs=/var/lib/kafka/data    # Thư mục lưu dữ liệu
+zookeeper.connect=localhost:2181  # Nếu dùng ZooKeeper mode
+num.partitions=3
+default.replication.factor=2
+
+2. Cấu hình cho High Availability (HA):
+
+Cluster tối thiểu 3 broker
+
+replication.factor >= 3
+
+min.insync.replicas=2 để tránh mất dữ liệu
+
+unclean.leader.election.enable=false để chỉ cho phép leader có dữ liệu mới nhất
+
+3. Security
+
+Bật SSL / SASL:
+
+listeners=SASL_SSL://:9093
+security.inter.broker.protocol=SASL_SSL
+sasl.mechanism.inter.broker.protocol=SCRAM-SHA-512
+
+
+ACL quản lý quyền publish / consume:
+
+kafka-acls.sh --add --allow-principal User:app --operation Read --topic mytopic
+
+🧰 IV. Triển khai Kafka thực tế
+1. Cài đặt (đơn giản nhất):
+wget https://downloads.apache.org/kafka/3.7.0/kafka_2.13-3.7.0.tgz
+tar -xzf kafka_2.13-3.7.0.tgz
+cd kafka_2.13-3.7.0
+
+2. Khởi động dịch vụ:
+# Start ZooKeeper (nếu dùng)
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+# Start Kafka
+bin/kafka-server-start.sh config/server.properties
+
+3. Tạo topic, gửi & nhận message:
+bin/kafka-topics.sh --create --topic demo --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+bin/kafka-console-producer.sh --topic demo --bootstrap-server localhost:9092
+bin/kafka-console-consumer.sh --topic demo --bootstrap-server localhost:9092 --from-beginning
+
+🛠️ V. Giám sát & Bảo trì
+1. Monitoring metrics:
+
+JVM heap / GC time
+
+Lag giữa Producer và Consumer
+
+Disk I/O, network latency
+
+Topic throughput (messages/sec)
+
+Công cụ phổ biến:
+
+Prometheus + Grafana (Kafka Exporter)
+
+Confluent Control Center
+
+LinkedIn Burrow (consumer lag monitoring)
+
+2. Log location:
+
+/opt/kafka/logs/server.log
+
+/var/log/kafka/ (nếu chạy service)
+
+Theo dõi:
+
+journalctl -u kafka
+tail -f /opt/kafka/logs/server.log
+
+3. Cấu hình retention:
+
+Giới hạn dữ liệu cũ:
+
+log.retention.hours=168     # Giữ dữ liệu 7 ngày
+log.segment.bytes=1073741824  # 1 GB mỗi segment
