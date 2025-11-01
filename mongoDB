@@ -1,0 +1,673 @@
+I. 🌱 Tổng quan MongoDB
+Thành phần	Mô tả
+MongoDB	CSDL NoSQL dạng document (lưu trữ JSON/BSON).
+Collection	Tập hợp các document, tương tự table trong SQL.
+Document	Một bản ghi (record), dạng JSON.
+Replica Set	Cụm HA gồm 1 primary và ≥2 secondary (replication).
+Sharding	Phân mảnh dữ liệu theo shard key để scale horizontal.
+mongod	Daemon chính của MongoDB.
+mongos	Query router khi sử dụng sharding.
+mongo shell / mongosh	CLI để truy vấn và cấu hình.
+II. 🧱 Cài đặt MongoDB trên Linux (Ubuntu / CentOS)
+1️⃣ Ubuntu 22.04
+sudo apt update
+sudo apt install gnupg curl -y
+curl -fsSL https://pgp.mongodb.com/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.gpg --dearmor
+echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+sudo apt update
+sudo apt install -y mongodb-org
+sudo systemctl enable mongod
+sudo systemctl start mongod
+sudo systemctl status mongod
+
+2️⃣ CentOS / RHEL
+cat <<EOF | sudo tee /etc/yum.repos.d/mongodb-org.repo
+[mongodb-org-7.0]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/7.0/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-7.0.asc
+EOF
+sudo yum install -y mongodb-org
+sudo systemctl enable --now mongod
+
+III. ⚙️ Cấu hình cơ bản
+File cấu hình /etc/mongod.conf
+storage:
+  dbPath: /var/lib/mongo
+  journal:
+    enabled: true
+systemLog:
+  destination: file
+  path: /var/log/mongodb/mongod.log
+net:
+  port: 27017
+  bindIp: 0.0.0.0
+security:
+  authorization: enabled
+replication:
+  replSetName: "rs0"
+
+
+bindIp = 0.0.0.0 để lắng nghe tất cả interfaces (chỉ dùng trong nội bộ).
+
+authorization: enabled → yêu cầu login bằng user/password.
+
+replication.replSetName kích hoạt chế độ Replica Set.
+
+IV. 🔐 Tạo user và phân quyền
+mongosh
+use admin
+db.createUser({
+  user: "admin",
+  pwd: "StrongPass123",
+  roles: [ { role: "root", db: "admin" } ]
+})
+
+
+Login lại:
+
+mongosh -u admin -p StrongPass123 --authenticationDatabase admin
+
+V. 🧩 Replica Set (High Availability)
+Cấu hình 3 node:
+Role	Host	Port
+Primary	mongo1	27017
+Secondary	mongo2	27017
+Arbiter	mongo3	27017
+
+Trên Primary:
+
+mongosh
+rs.initiate({
+  _id: "rs0",
+  members: [
+    { _id: 0, host: "mongo1:27017" },
+    { _id: 1, host: "mongo2:27017" },
+    { _id: 2, host: "mongo3:27017", arbiterOnly: true }
+  ]
+})
+rs.status()
+
+
+Tự động failover khi primary down.
+
+Secondary có thể chỉ đọc (rs.slaveOk()).
+
+VI. 🧮 Sharding (Scale-Out)
+
+Mục tiêu: phân phối dữ liệu theo “shard key” → chia tải giữa nhiều node.
+
+Thành phần:
+
+Config servers (mongod --configsvr)
+
+Shard servers (mongod --shardsvr)
+
+Query router (mongos)
+
+Lệnh cấu hình:
+
+mongosh
+sh.enableSharding("appdb")
+sh.shardCollection("appdb.users", { "userid": 1 })
+
+VII. 💾 Backup & Restore
+1️⃣ Dump toàn bộ database
+mongodump --uri="mongodb://admin:pass@localhost:27017" --out=/backup/mongo_$(date +%F)
+
+2️⃣ Restore từ dump
+mongorestore --uri="mongodb://admin:pass@localhost:27017" /backup/mongo_2025-11-01/
+
+3️⃣ Snapshot (Filesystem-level)
+
+Nếu dùng LVM, Ceph, hay AWS EBS:
+
+lvcreate --snapshot --name mongo_snap -L 10G /dev/vg0/mongo
+
+VIII. 📊 Monitoring MongoDB
+Dùng lệnh CLI:
+mongostat
+mongotop
+
+Tích hợp Prometheus Exporter:
+docker run -d -p 9216:9216 bitnami/mongodb-exporter:latest \
+  --mongodb.uri="mongodb://admin:pass@mongo1:27017/admin"
+
+
+Metrics quan trọng:
+
+mongodb_mongod_opLatencies_latency_microseconds_total
+
+mongodb_mongod_connections_current
+
+mongodb_mongod_mem_resident_megabytes
+
+IX. 🧯 Troubleshooting thực tế
+Sự cố	Nguyên nhân	Cách xử lý
+mongod không start	Port 27017 đang bị chiếm	`netstat -tulnp
+Kết nối bị từ chối	bindIp sai hoặc chưa mở firewall	ufw allow 27017
+Secondary không sync	Network lag hoặc oplog quá nhỏ	rs.printSlaveReplicationInfo()
+Disk full	Log hoặc data chiếm dung lượng	Xóa log cũ, dọn /var/lib/mongo/journal
+Performance kém	Index chưa tối ưu	db.collection.getIndexes() và tạo index phù hợp
+Auth failed	Sai DB auth	Luôn chỉ định --authenticationDatabase admin
+X. 🧠 Kinh nghiệm thực tế System Engineer
+
+Luôn bật journaling (storage.journal.enabled: true) để tránh data loss.
+
+Dùng WiredTiger engine (mặc định) – tối ưu I/O và compression.
+
+Oplog size đủ lớn cho replication (≥10% dung lượng dữ liệu).
+
+Khi chạy container: mount persistent volume /data/db.
+
+Backup định kỳ bằng mongodump và test khôi phục thực tế.
+
+Giám sát bằng Prometheus + Grafana dashboard (bitnami/mongodb).
+
+Trong môi trường multi-site: replication async qua VPN/IPSec.
+
+XI. ⚙️ Lệnh quản trị nhanh (cheat sheet)
+Mục tiêu	Lệnh
+Start mongod	systemctl start mongod
+Kiểm tra trạng thái replica	rs.status()
+Xem log	tail -f /var/log/mongodb/mongod.log
+Tạo DB mới	use newdb
+Thêm document	db.users.insert({name:"Alice", age:30})
+Xem dữ liệu	db.users.find().pretty()
+Xóa DB	db.dropDatabase()
+Export dữ liệu	mongoexport --db appdb --collection users --out users.json
+XII. 🔐 Security Checklist
+
+✅ authorization: enabled trong cấu hình
+✅ Không mở 27017 ra Internet
+✅ Dùng user riêng cho app, không dùng root
+✅ SSL/TLS cho kết nối giữa nodes
+✅ Backup file keyFile để đồng bộ auth giữa replica
+✅ Audit log bật nếu là môi trường Production
+
+🧭 MongoDB Operation Playbook
+
+(Dành cho System Engineers – Production Level)
+
+I. 🚀 Cluster Initialization Checklist
+1️⃣ Chuẩn bị hệ thống
+
+Yêu cầu:
+
+3 hoặc 5 node (số lẻ để bầu primary)
+
+OS: Ubuntu 22.04 LTS hoặc CentOS 8
+
+Mỗi node: ≥ 4GB RAM, SSD storage
+
+Đồng bộ thời gian: chrony hoặc ntpd
+
+Firewall mở port:
+
+27017/tcp (mongod)
+27018/tcp (mongos nếu có)
+27019/tcp (config server)
+
+
+Cấu trúc mẫu:
+
+Hostname	Role	IP
+mongo1	Primary	10.0.0.1
+mongo2	Secondary	10.0.0.2
+mongo3	Arbiter	10.0.0.3
+2️⃣ Tạo thư mục & cấu hình cơ bản
+mkdir -p /data/db /var/log/mongodb
+chown -R mongod:mongod /data /var/log/mongodb
+
+
+/etc/mongod.conf:
+
+storage:
+  dbPath: /data/db
+  journal:
+    enabled: true
+systemLog:
+  destination: file
+  path: /var/log/mongodb/mongod.log
+  logAppend: true
+net:
+  port: 27017
+  bindIp: 0.0.0.0
+security:
+  keyFile: /etc/mongo-keyfile
+  authorization: enabled
+replication:
+  replSetName: rs0
+processManagement:
+  fork: true
+
+3️⃣ Tạo keyfile để các node xác thực lẫn nhau
+openssl rand -base64 756 > /etc/mongo-keyfile
+chmod 600 /etc/mongo-keyfile
+chown mongod:mongod /etc/mongo-keyfile
+
+
+Sao chép file này sang tất cả các node.
+
+4️⃣ Khởi tạo Replica Set
+
+Trên mongo1:
+
+mongosh
+rs.initiate({
+  _id: "rs0",
+  members: [
+    { _id: 0, host: "mongo1:27017" },
+    { _id: 1, host: "mongo2:27017" },
+    { _id: 2, host: "mongo3:27017", arbiterOnly: true }
+  ]
+})
+
+
+Kiểm tra:
+
+rs.status()
+
+II. 🔐 User & Access Control
+1️⃣ Tạo user root
+use admin
+db.createUser({
+  user: "admin",
+  pwd: "StrongPass123!",
+  roles: [ { role: "root", db: "admin" } ]
+})
+
+2️⃣ Tạo user cho ứng dụng
+use appdb
+db.createUser({
+  user: "appuser",
+  pwd: "App@2025!",
+  roles: [ { role: "readWrite", db: "appdb" } ]
+})
+
+III. 🧮 Health Check Script
+
+Tạo script /opt/mongodb/healthcheck.sh:
+
+#!/bin/bash
+mongo --quiet --eval 'rs.status().members.forEach(m => print(m.name + " : " + m.stateStr))'
+
+
+Tự động chạy mỗi 5 phút qua cron:
+
+*/5 * * * * /opt/mongodb/healthcheck.sh >> /var/log/mongo_health.log
+
+IV. 💾 Backup & Restore Plan
+1️⃣ Full Backup hàng ngày
+
+/opt/mongodb/backup.sh
+
+#!/bin/bash
+DATE=$(date +%F)
+BACKUP_DIR="/backup/mongo/$DATE"
+mkdir -p $BACKUP_DIR
+
+mongodump --uri="mongodb://admin:StrongPass123!@mongo1:27017/admin" --gzip --out=$BACKUP_DIR
+find /backup/mongo/ -type d -mtime +7 -exec rm -rf {} \;   # Xóa backup cũ >7 ngày
+
+
+Thêm vào cron:
+
+0 2 * * * /opt/mongodb/backup.sh
+
+2️⃣ Restore
+mongorestore --gzip --uri="mongodb://admin:StrongPass123!@mongo1:27017/admin" /backup/mongo/2025-11-01/
+
+V. 📊 Monitoring & Alerting
+1️⃣ MongoDB Exporter (Prometheus)
+docker run -d --name=mongo-exporter -p 9216:9216 \
+  bitnami/mongodb-exporter:latest \
+  --mongodb.uri="mongodb://admin:StrongPass123!@mongo1:27017/admin"
+
+2️⃣ Dashboard Grafana (Metrics cần giám sát)
+Metric	Ý nghĩa	Ngưỡng cảnh báo
+mongodb_up	Kiểm tra service sống	=1
+mongodb_mongod_connections_current	Số kết nối hiện tại	< 80% max
+mongodb_mongod_mem_resident_megabytes	RAM tiêu thụ	Giới hạn 75%
+mongodb_mongod_opLatencies_latency_microseconds_total	Độ trễ	< 5ms
+mongodb_mongod_asserts_total	Số lỗi nội bộ	= 0
+VI. 🧰 Common Maintenance Tasks
+Nhiệm vụ	Lệnh
+Kiểm tra dung lượng collection	db.stats()
+Compact dữ liệu	db.runCommand({compact:'collection'})
+Check index	db.collection.getIndexes()
+Tạo index mới	db.collection.createIndex({field:1})
+Rotate log	logRotate
+Xóa dữ liệu cũ	db.collection.remove({date:{$lt:ISODate("2024-01-01")}})
+VII. 🧯 Troubleshooting thực tế
+Vấn đề	Dấu hiệu	Nguyên nhân	Giải pháp
+Primary down	Secondary chỉ đọc	Network mất hoặc crash	Kiểm tra rs.status(), restart node
+Replication delay	Secondary lag vài GB	Oplog nhỏ, network chậm	Tăng oplogSizeMB, kiểm tra băng thông
+Disk full	mongod stop	Log hoặc dữ liệu quá lớn	Dọn log, archive backup, mở rộng volume
+Auth failed	Không kết nối được	Sai DB hoặc credential	Sử dụng --authenticationDatabase admin
+Performance kém	Query lâu	Thiếu index	Dùng explain() để tối ưu index
+Too many connections	Kết nối full	App leak connection	Set maxIncomingConnections và pool limit
+VIII. 🌐 Multi-site Replication
+
+Mục tiêu: đảm bảo HA/DR (High Availability / Disaster Recovery)
+
+Site	Role	Node
+DC1	Primary	mongo1, mongo2
+DC2	Secondary	mongo3
+DC3	Arbiter	mongo4
+
+Thiết lập:
+
+rs.add({ host: "mongo3.dc2.local:27017", priority: 0, hidden: false })
+rs.addArb("mongo4.dc3.local:27017")
+
+
+Chú ý:
+
+Dùng VPN hoặc private link giữa các DC.
+
+Dùng priority: 0 cho secondary ở DR site (không được bầu primary trừ khi failover).
+
+Giám sát ping liên vùng để tránh split-brain.
+
+IX. ☁️ Container & Kubernetes Integration
+
+MongoDB StatefulSet (K8S) – file mongodb.yaml (rút gọn):
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  serviceName: "mongo"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongod
+        image: mongo:7.0
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: data
+          mountPath: /data/db
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 20Gi
+
+
+Command để join replica set:
+
+kubectl exec -it mongo-0 -- mongosh --eval "rs.initiate({...})"
+
+X. 🧠 Tips & Best Practices
+
+Dùng WiredTiger storage engine (mặc định).
+
+Đặt journaling = true → tránh mất dữ liệu.
+
+Backup trước khi mongodump / restore / update version.
+
+Không bao giờ upgrade mà chưa test trên staging.
+
+Luôn test failover định kỳ (primary down → auto election).
+
+Đặt cảnh báo Prometheus cho:
+
+Replication lag > 60s
+
+Disk > 80%
+
+Connections > 80%
+
+Tài liệu hóa toàn bộ: IP, port, keyfile, account, backup path.
+
+🧩 MongoDB Disaster Recovery Plan (DRP)
+
+Mục tiêu:
+Đảm bảo dữ liệu MongoDB luôn an toàn, có thể phục hồi với RPO < 5 phút và RTO < 30 phút trong các tình huống mất mát hoặc gián đoạn hệ thống.
+
+I. 🔍 Kiến trúc DR tổng quan
+1️⃣ Mô hình Multi-Site Replica Set (HA + DR)
+Site	Vai trò	Thành phần
+DC1 (Primary)	Production	mongo1, mongo2
+DC2 (Secondary)	DR Site	mongo3
+DC3 (Arbiter)	Tie-breaker	mongo4
+
+Luồng replication:
+Primary → Secondary (DC2) → Arbiter chỉ tham gia bầu cử.
+Replication async qua VPN hoặc private link.
+
+2️⃣ Các thông số RTO / RPO đề xuất
+Thành phần	RPO (mất dữ liệu tối đa)	RTO (thời gian khôi phục)
+Replica Set	≤ 5 phút	≤ 30 phút
+Backup full (mongodump)	24 giờ	≤ 2 giờ
+Oplog	30 phút	≤ 10 phút
+DR failover	0 phút (nếu auto-election)	5–10 phút
+II. ⚙️ Cấu hình replication cho DR site
+
+Trên primary (mongo1):
+
+rs.add({
+  host: "mongo3.dr.local:27017",
+  priority: 0,
+  hidden: false,
+  votes: 1
+})
+rs.addArb("mongo4.tie.local:27017")
+
+
+🔸 priority: 0 giúp node DR không được bầu làm primary trừ khi thực sự failover.
+🔸 Nếu muốn DR site có thể takeover trong sự cố lớn → nâng priority: 1.
+
+Kiểm tra trạng thái:
+
+rs.status()
+rs.printReplicationInfo()
+
+III. 💾 Chiến lược Backup & Restore DR
+1️⃣ Lịch backup định kỳ
+Loại	Tần suất	Công cụ	Lưu trữ
+Full dump	Hàng ngày (2AM)	mongodump	/backup/full/YYYY-MM-DD
+Incremental	Mỗi 15 phút	oplog	/backup/oplog/YYYY-MM-DD/HHMM
+Config backup	Hàng tuần	rs.conf()	/backup/config/
+2️⃣ Backup script mẫu (full)
+
+/opt/mongodb/backup_full.sh
+
+#!/bin/bash
+DATE=$(date +%F)
+BACKUP_DIR="/backup/full/$DATE"
+mkdir -p $BACKUP_DIR
+
+mongodump --gzip --oplog --uri="mongodb://admin:StrongPass123!@mongo1:27017/admin" --out=$BACKUP_DIR
+find /backup/full/ -type d -mtime +7 -exec rm -rf {} \;
+
+3️⃣ Backup script (oplog incremental)
+
+/opt/mongodb/backup_oplog.sh
+
+#!/bin/bash
+DATE=$(date +%F)
+TIME=$(date +%H%M)
+BACKUP_DIR="/backup/oplog/$DATE"
+mkdir -p $BACKUP_DIR
+
+mongodump --db local --collection oplog.rs --out=$BACKUP_DIR/$TIME --gzip
+find /backup/oplog/ -type d -mtime +3 -exec rm -rf {} \;
+
+4️⃣ Restore DR site từ backup
+mongorestore --gzip --uri="mongodb://admin:StrongPass123!@mongo3:27017/admin" /backup/full/2025-11-01/
+
+IV. 🚨 Quy trình DR Failover
+Kịch bản 1️⃣: Primary DC1 down (network hoặc hardware)
+Bước 1: Kiểm tra trạng thái
+rs.status()
+
+
+Nếu mongo1 mất liên lạc, mongo3 sẽ không tự bầu vì priority=0.
+
+Bước 2: Promote secondary thành primary
+
+Trên mongo3:
+
+rs.stepUp()
+rs.conf()
+
+
+Hoặc chỉnh config:
+
+cfg = rs.conf()
+cfg.members[2].priority = 1
+rs.reconfig(cfg, {force: true})
+
+Bước 3: Chuyển ứng dụng sang DR endpoint
+
+Cập nhật connection string:
+
+mongodb://mongo3.dr.local:27017, mongo4.tie.local:27017/?replicaSet=rs0
+
+Bước 4: Khi DC1 phục hồi
+
+Reset lại priority
+
+Sync dữ liệu từ DR → DC1
+
+rs.syncFrom("mongo3.dr.local:27017")
+
+Kịch bản 2️⃣: Split-brain (hai site cùng primary)
+
+Nguyên nhân: mất kết nối giữa site, arbiter unreachable.
+Giải pháp:
+
+Xác định site hợp lệ (ưu tiên DC1)
+
+Shutdown mongod trên site DR:
+
+systemctl stop mongod
+
+
+Sau khi link ổn định, re-sync thủ công bằng initial sync:
+
+rs.remove("mongo3.dr.local:27017")
+rs.add("mongo3.dr.local:27017")
+
+Kịch bản 3️⃣: Node bị lỗi dữ liệu (corruption, disk failure)
+
+Stop mongod service:
+
+systemctl stop mongod
+
+
+Xóa dữ liệu lỗi:
+
+rm -rf /data/db/*
+
+
+Re-sync lại từ node khác:
+
+rs.add("mongo3.dr.local:27017")
+
+V. 🔎 Kiểm thử DR định kỳ
+
+Chu kỳ: 1 lần / tháng
+Nội dung kiểm thử:
+
+Kiểm thử	Kết quả mong đợi
+Tắt primary	DR takeover < 2 phút
+Restore backup full	Restore thành công, checksum OK
+Test restore oplog	Dữ liệu khớp RPO
+Test split-brain	Cluster giữ consistency
+Test network latency	< 100ms giữa site
+
+Command kiểm thử:
+
+mongo --eval 'printjson(rs.status())'
+mongostat --host mongo3.dr.local --rowcount 5
+
+VI. 🧠 DR Automation (Ansible + Bash)
+
+roles/mongodb-dr/tasks/main.yml
+
+- name: Backup MongoDB full dump
+  command: bash /opt/mongodb/backup_full.sh
+
+- name: Verify replication lag
+  shell: "mongo --eval 'rs.printSlaveReplicationInfo()'"
+  register: repl_info
+  changed_when: false
+
+- name: Failover if primary down
+  shell: "mongo --eval 'rs.stepUp()'"
+  when: "'PRIMARY' not in repl_info.stdout"
+
+VII. 📈 Monitoring DR Replication
+
+Thêm vào Prometheus rules:
+
+- alert: MongoReplicationLag
+  expr: mongodb_mongod_replset_oplog_head_timestamp - mongodb_mongod_replset_member_optime_timestamp > 60
+  for: 5m
+  labels:
+    severity: warning
+  annotations:
+    description: "Replication lag > 60s"
+
+
+Grafana dashboard: theo dõi Replication Lag, Member State, Election Count.
+
+VIII. 📘 Tài liệu & Báo cáo
+
+DR Runbook: /docs/DRP_MongoDB_v1.2.pdf
+
+Last DR Test: /reports/DR_Test_Results_2025-10.xlsx
+
+Backup Verification Log: /logs/backup_verify.log
+
+Contact matrix:
+
+DBA on-call
+
+Network admin
+
+System engineer (24/7)
+
+IX. ✅ Best Practices tổng hợp
+
+Replica ở DR site nên priority=0 (chỉ bật khi failover)
+
+Luôn kiểm tra replication lag < RPO
+
+Backup định kỳ: full + oplog
+
+Sử dụng monitoring tự động (Prometheus, Grafana)
+
+Cảnh báo khi:
+
+Lag > 60s
+
+Disk > 80%
+
+Node state != PRIMARY/SECONDARY
+
+Tài liệu hóa:
+
+Cluster topology
+
+Backup schedule
+
+DR recovery steps
+
