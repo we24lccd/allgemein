@@ -1,0 +1,206 @@
+I. 🔍 Giới thiệu Prometheus Architecture
+1️⃣ Thành phần chính
+Thành phần	Vai trò
+Prometheus Server	Thu thập và lưu trữ metric (time series)
+Exporter	Cung cấp metric qua HTTP endpoint /metrics
+Alertmanager	Gửi cảnh báo (email, Slack, Telegram, v.v.)
+Pushgateway	Thu thập metric từ job ngắn (cron, batch)
+Grafana	Hiển thị dashboard trực quan
+2️⃣ Luồng hoạt động
+[Node Exporter] ─┐
+[MongoDB Exporter] ─┼──▶ [Prometheus Server] ─▶ [Alertmanager]
+[Redis Exporter] ──┘                 │
+                                     ▼
+                                  [Grafana]
+
+II. ⚙️ Cài đặt Prometheus (trên Linux)
+1️⃣ Tải và cài đặt
+useradd --no-create-home --shell /bin/false prometheus
+wget https://github.com/prometheus/prometheus/releases/latest/download/prometheus.tar.gz
+tar xzf prometheus.tar.gz
+mv prometheus /usr/local/bin/
+mkdir -p /etc/prometheus /var/lib/prometheus
+chown -R prometheus:prometheus /etc/prometheus /var/lib/prometheus
+
+2️⃣ File cấu hình /etc/prometheus/prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'node'
+    static_configs:
+      - targets: ['192.168.1.10:9100', '192.168.1.11:9100']
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['192.168.1.12:9216']
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['192.168.1.13:9121']
+
+3️⃣ Systemd service
+cat <<EOF > /etc/systemd/system/prometheus.service
+[Unit]
+Description=Prometheus Monitoring
+After=network.target
+
+[Service]
+User=prometheus
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/var/lib/prometheus
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable prometheus --now
+
+III. 📊 Node Exporter – giám sát Linux host
+1️⃣ Cài đặt Node Exporter
+wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter.tar.gz
+tar -xzf node_exporter.tar.gz
+mv node_exporter /usr/local/bin/
+
+2️⃣ Chạy dưới systemd
+cat <<EOF > /etc/systemd/system/node_exporter.service
+[Unit]
+Description=Node Exporter
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/node_exporter
+User=nobody
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable node_exporter --now
+
+
+Truy cập thử:
+👉 http://<server-ip>:9100/metrics
+
+IV. 📦 Exporter cho các dịch vụ phổ biến
+Service	Exporter	Default Port	Install
+MongoDB	mongodb_exporter	9216	docker run -d --net=host bitnami/mongodb-exporter
+Redis	redis_exporter	9121	docker run -d --net=host oliver006/redis_exporter
+Nginx	nginx-prometheus-exporter	9113	nginx + stub_status module
+Postgres	postgres_exporter	9187	prometheus-community/postgres-exporter
+Docker	cAdvisor	8080	docker run -d --net=host google/cadvisor
+K8s	kube-state-metrics	8080	Helm chart prometheus-community/kube-prometheus-stack
+V. 🧩 Alertmanager Configuration
+1️⃣ File /etc/alertmanager/config.yml
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alert@company.com'
+  smtp_auth_username: 'alert@company.com'
+  smtp_auth_password: 'xxxxxx'
+
+route:
+  receiver: 'mail-team'
+  group_wait: 10s
+  repeat_interval: 1h
+
+receivers:
+  - name: 'mail-team'
+    email_configs:
+      - to: 'sysadmin@company.com'
+
+2️⃣ Ví dụ rule cảnh báo
+
+File /etc/prometheus/alert.rules.yml:
+
+groups:
+  - name: system
+    rules:
+      - alert: HighCPUUsage
+        expr: avg(rate(node_cpu_seconds_total{mode="system"}[5m])) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU usage high on {{ $labels.instance }}"
+
+
+Thêm vào prometheus.yml:
+
+rule_files:
+  - /etc/prometheus/alert.rules.yml
+alerting:
+  alertmanagers:
+    - static_configs:
+      - targets: ['localhost:9093']
+
+VI. 📈 Tích hợp Grafana
+1️⃣ Cài đặt nhanh
+sudo apt install -y grafana
+systemctl enable grafana-server --now
+
+2️⃣ Cấu hình Prometheus datasource
+
+Settings → Data Sources → Add → Prometheus → URL: http://localhost:9090
+
+3️⃣ Import dashboard mẫu
+
+Node Exporter Full (ID: 1860)
+
+MongoDB Overview (ID: 2583)
+
+Redis Dashboard (ID: 763)
+
+Docker Host Overview (ID: 193)
+
+Kubernetes Cluster Monitoring (ID: 6417)
+
+VII. 🧭 Troubleshooting Prometheus
+Vấn đề	Nguyên nhân	Giải pháp
+❌ Prometheus không thu thập metric	sai port hoặc firewall chặn	Kiểm tra curl http://target:port/metrics
+⚠️ Alert không gửi	cấu hình SMTP hoặc Alertmanager lỗi	Kiểm tra journalctl -u alertmanager
+🐢 Prometheus chậm	quá nhiều target hoặc retention cao	Giảm scrape_interval, tăng disk IOPS
+📉 Metric mất dữ liệu	TSDB đầy hoặc bị corrupt	Dọn /var/lib/prometheus, restart service
+🚫 Grafana “No data”	sai datasource URL	Xem lại prometheus.yml và localhost:9090
+VIII. 🧠 Best Practices cho Production
+
+✅ Dùng SSD cho thư mục dữ liệu /var/lib/prometheus
+✅ Giới hạn retention time (vd: 15 ngày)
+✅ Sử dụng remote write đến Thanos / VictoriaMetrics nếu cần lưu dài hạn
+✅ Đặt scrape_interval: 15s, evaluation_interval: 15s
+✅ Sử dụng relabel_configs để loại bỏ metric thừa
+✅ Dùng Kubernetes ServiceMonitor khi chạy trong cluster
+✅ Backup file config (prometheus.yml, alert.rules.yml) định kỳ bằng GitOps
+
+IX. 🧰 Monitoring Architecture đề xuất (Multi-Site HA)
+           ┌────────────────────────────┐
+           │        Grafana (HA)        │
+           └──────────────┬─────────────┘
+                          │
+       ┌──────────────────┴──────────────────┐
+       │                                     │
+┌─────────────┐                      ┌─────────────┐
+│ Prometheus  │◀──Remote Write──▶│ Prometheus  │
+│ (Site A)    │                   │ (Site B)    │
+└─────┬───────┘                   └─────┬───────┘
+      │                                     │
+┌─────▼───────┐                     ┌──────▼───────┐
+│ Node / DB   │                     │ Node / DB   │
+│ Exporters   │                     │ Exporters   │
+└──────────────┘                     └──────────────┘
+
+
+🔹 HA setup:
+Prometheus ở mỗi site thu thập metric cục bộ → replicate về Grafana/Thanos để có global visibility.
+Nếu một site down → hệ thống vẫn có dữ liệu từ site còn lại.
+
+X. 🔔 Alert Template quan trọng
+Tên	Biểu thức	Mức độ
+High CPU	avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) > 0.9	warning
+Low Memory	(node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) < 0.1	critical
+Disk Full	(node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.15	critical
+MongoDB Lag	mongodb_mongod_replset_member_optime_lag_seconds > 30	warning
+Redis Down	up{job="redis"} == 0	critical
+Node Down	up == 0	critical
