@@ -160,3 +160,212 @@ CPU 100%	Keyspace lớn, scan hoặc MONITOR	Tránh dùng KEYS *, dùng SCAN tha
  Dùng rename-command để ẩn lệnh nguy hiểm (FLUSHALL, CONFIG)
  Bảo mật: requirepass, firewall, VPN nội bộ
  Tune kernel: vm.overcommit_memory=1, tcp-backlog, somaxconn
+
+I. 🧠 Tổng quan
+Thành phần	Mô tả
+Redis Server	Database in-memory key-value, tốc độ cực nhanh
+Redis Sentinel	Theo dõi master/slave, tự động failover
+Redis Cluster	Phân mảnh dữ liệu (sharding) để scale horizontally
+Redis Replication	Đồng bộ dữ liệu master–slave
+Persistence	RDB (snapshot) & AOF (append-only file)
+Use Cases	Cache, Session Store, Pub/Sub, Queue, Rate Limiting
+II. ⚙️ 1️⃣ CÀI ĐẶT & CẤU HÌNH
+A. Cài đặt Redis trên Linux (Ubuntu)
+sudo apt update && sudo apt install redis-server -y
+
+B. Cấu hình cơ bản /etc/redis/redis.conf
+bind 0.0.0.0
+protected-mode yes
+port 6379
+requirepass StrongRedisPassword123
+maxmemory 1gb
+maxmemory-policy allkeys-lru
+appendonly yes
+appendfilename "appendonly.aof"
+save 900 1
+save 300 10
+save 60 10000
+logfile /var/log/redis/redis-server.log
+
+
+✅ Giải thích nhanh:
+
+maxmemory-policy allkeys-lru: dùng LRU eviction khi đầy RAM
+
+appendonly yes: bật AOF (an toàn hơn RDB snapshot)
+
+save: bật snapshot backup (RDB)
+
+C. Khởi động & kiểm tra
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+redis-cli -a StrongRedisPassword123 ping
+# Output: PONG
+
+III. 🔁 2️⃣ REPLICATION & SENTINEL (HA)
+A. Master / Slave cấu hình
+
+Trên Slave server:
+
+replicaof <MASTER_IP> 6379
+masterauth StrongRedisPassword123
+
+
+Kiểm tra trạng thái:
+
+redis-cli -a StrongRedisPassword123 info replication
+
+
+Output mẫu:
+
+role:slave
+master_link_status:up
+
+B. Redis Sentinel Setup
+
+Trên mỗi node (ít nhất 3 Sentinel):
+
+sudo apt install redis-sentinel -y
+cp /etc/redis/sentinel.conf /etc/redis/sentinel-6379.conf
+
+
+Cấu hình /etc/redis/sentinel-6379.conf:
+
+port 26379
+sentinel monitor mymaster 10.0.0.11 6379 2
+sentinel auth-pass mymaster StrongRedisPassword123
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 10000
+
+
+Khởi động Sentinel:
+
+redis-sentinel /etc/redis/sentinel-6379.conf --daemonize yes
+
+
+Kiểm tra:
+
+redis-cli -p 26379 sentinel masters
+redis-cli -p 26379 sentinel slaves mymaster
+
+
+✅ Sentinel quorum yêu cầu ≥ 2 node đồng thuận để bầu leader mới.
+
+IV. 🧩 3️⃣ REDIS CLUSTER (SCALING)
+A. Chuẩn bị node
+
+6 node (3 master + 3 slave):
+
+10.0.0.11:6379
+10.0.0.12:6379
+10.0.0.13:6379
+10.0.0.14:6379
+10.0.0.15:6379
+10.0.0.16:6379
+
+
+Tạo cluster:
+
+redis-cli --cluster create \
+10.0.0.11:6379 10.0.0.12:6379 10.0.0.13:6379 \
+10.0.0.14:6379 10.0.0.15:6379 10.0.0.16:6379 \
+--cluster-replicas 1
+
+
+Kiểm tra:
+
+redis-cli -c -h 10.0.0.11 cluster info
+redis-cli -c cluster nodes
+
+V. 💾 4️⃣ BACKUP & RESTORE
+A. RDB Snapshot
+redis-cli SAVE
+# hoặc async
+redis-cli BGSAVE
+
+
+File nằm tại /var/lib/redis/dump.rdb
+
+B. AOF Backup
+cp /var/lib/redis/appendonly.aof /backup/redis-aof-$(date +%F).aof
+
+C. Restore
+
+Dừng Redis
+sudo systemctl stop redis-server
+
+Copy file dump.rdb hoặc appendonly.aof vào /var/lib/redis/
+
+Khởi động lại Redis
+sudo systemctl start redis-server
+
+VI. 🔒 5️⃣ SECURITY BEST PRACTICES
+Biện pháp	Mô tả
+requirepass	Đặt mật khẩu mạnh
+bind 127.0.0.1 hoặc VPN	Giới hạn IP truy cập
+TLS	Dùng stunnel hoặc Redis 6+ TLS
+ACL	Phân quyền theo user (acl setuser readonly on +get ~cached:*)
+Disable dangerous commands	rename-command CONFIG ""
+VII. 📊 6️⃣ MONITORING (PROMETHEUS / ZABBIX)
+A. Redis Exporter (Prometheus)
+docker run -d -p 9121:9121 oliver006/redis_exporter \
+  --redis.addr=redis://10.0.0.11:6379 \
+  --redis.password=StrongRedisPassword123
+
+
+Metric quan trọng:
+
+redis_connected_clients
+
+redis_used_memory
+
+redis_keyspace_hits
+
+redis_keyspace_misses
+
+redis_commands_processed_total
+
+Dashboard: Grafana → Import → ID 763
+
+B. Zabbix Monitoring
+
+Template: Template DB Redis by Zabbix agent
+
+Items:
+
+redis.uptime
+
+redis.memory.used
+
+redis.clients.connected
+
+redis.replication.role
+
+redis.info[role]
+
+Trigger mẫu:
+
+{Template DB Redis:redis.memory.used.last()}>800000000
+
+
+→ Cảnh báo khi Redis dùng >800MB RAM.
+
+VIII. 🔧 7️⃣ TROUBLESHOOTING
+Vấn đề	Nguyên nhân	Cách xử lý
+MISCONF khi ghi dữ liệu	Redis ở chế độ read-only	Kiểm tra replication role, đổi sang master
+Dữ liệu mất sau reboot	Chưa bật AOF / save	Bật appendonly yes và save trong config
+Slave không sync	network issue / auth sai	Xem info replication, kiểm tra firewall và password
+“OOM command not allowed”	Hết RAM	Tăng maxmemory, đổi policy volatile-lru
+Sentinel failover không diễn ra	quorum < 2 hoặc auth lỗi	Xem sentinel info, kiểm tra auth-pass
+IX. 🧠 8️⃣ BEST PRACTICES PROD
+
+✅ Dùng Redis Cluster hoặc Sentinel để HA
+✅ Dùng AOF + snapshot song song
+✅ Theo dõi memory fragmentation ratio
+✅ Backup định kỳ bằng cron:
+
+0 2 * * * redis-cli BGSAVE && cp /var/lib/redis/dump.rdb /backup/
+
+
+✅ Đặt vm.overcommit_memory=1
+✅ Sử dụng TLS cho Redis >= 6
